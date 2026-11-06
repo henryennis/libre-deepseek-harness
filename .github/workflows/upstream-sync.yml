@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       commit:
-        description: Upstream commit to pin (default: latest on the tracked branch)
+        description: 'Upstream commit to pin (default: latest on the tracked branch)'
         required: false
 
 permissions:
