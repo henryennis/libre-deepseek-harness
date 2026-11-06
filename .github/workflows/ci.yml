@@ -24,4 +24,4 @@ jobs:
       - run: node scripts/build.mjs
       - name: Tests of patched packages
         working-directory: harness
-        run: node node_modules/vitest/vitest.mjs run packages/mcp/mcp-client packages/boot/app-boot packages/boot/plugin-manager
+        run: node node_modules/vitest/vitest.mjs run packages/mcp/mcp-client packages/boot/app-boot packages/boot/plugin-manager packages/llm/llm-pi-ai

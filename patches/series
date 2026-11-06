@@ -15,3 +15,4 @@ desktop/no-mandatory-update-service.patch
 privacy/desktop-analytics-off.patch
 desktop/welcome-openrouter-key.patch
 brand/desktop-name.patch
+deps/pi-ai-catalog-additions.patch
