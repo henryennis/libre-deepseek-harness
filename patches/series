@@ -1,0 +1,12 @@
+# Applied in this order by scripts/prepare.mjs (one path per line, relative to patches/).
+# Placeholders such as !!APP_NAME!! are filled from brand.json before each patch is applied.
+
+# Remove China-bound network paths.
+privacy/telemetry-off.patch
+privacy/no-npmmirror.patch
+privacy/no-feishu-contact-form.patch
+privacy/no-hf-mirror.patch
+privacy/compositions.patch
+
+# Fixes that are not privacy-related.
+fixes/mcp-unstructured-tool-result.patch

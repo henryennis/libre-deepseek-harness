@@ -1,0 +1,31 @@
+# Exceptions to domains/blocklist.txt: <package-name> <regex for the matched text>   # reason
+# Every entry must still match something, or scan-domains warns that it is stale. Keep reasons specific.
+
+# Opt-in DeepSeek provider: used only if the user adds a DeepSeek API key in Settings > Models.
+@deepseek-ai/dsh-llm-deepseek                 ^api(-docs)?\.deepseek\.com$   # provider endpoint and docs link
+@deepseek-ai/dsh-client-ui-settings-models    ^api\.deepseek\.com$           # DeepSeek provider card default URL
+@deepseek-ai/dsh-llm-pi-ai                    ^api\.deepseek\.com$           # pi-ai catalog entry for the DeepSeek route
+
+# Other opt-in model providers in the pi-ai catalog: only contacted with a user-supplied key for that provider.
+@deepseek-ai/dsh-llm-pi-ai                    aliyuncs\.com$                 # Qwen (Alibaba) routes
+@deepseek-ai/dsh-llm-pi-ai                    ^open\.bigmodel\.cn$           # Zhipu (Z.ai) China route
+@deepseek-ai/dsh-llm-pi-ai                    ^api\.moonshot\.cn$            # Moonshot (Kimi) China route
+
+# Packages whose rows are disabled in every shipped composition (patches/privacy/compositions.patch).
+@deepseek-ai/dsh-deepseek-account-platform    ^(api|platform)\.deepseek\.com$   # DeepSeek sign-in, row disabled
+@deepseek-ai/dsh-web-search-deepseek          ^api\.deepseek\.com$           # DeepSeek web search, row disabled
+@deepseek-ai/dsh-web-deepseek-api             ^api\.deepseek\.com$           # DeepSeek web search API, row disabled
+@deepseek-ai/dsh-client-ui-settings-web-search ^api-docs\.deepseek\.com$     # docs link for the disabled DeepSeek search provider
+
+# npmmirror references left inert by patches/privacy/no-npmmirror.patch: the probe is off and the mirror is no longer a fallback or default file source.
+@deepseek-ai/dsh-plugin-manager               npmmirror\.com                 # registry constant used only for comparisons
+@deepseek-ai/dsh-plugin-market                npmmirror\.com                 # public-registry comparison set
+@deepseek-ai/dsh-plugin-detail                npmmirror\.com                 # URL template for a file source that is no longer a default
+@deepseek-ai/dsh-client-ui-plugin-manager     npmmirror\.com                 # label and comparison for a registry the Host never offers now
+@deepseek-ai/dsh-client-ui-plugin-market      npmmirror\.com                 # comparison against a probe result that can no longer be npmmirror
+
+# Display-only strings: never requested.
+@deepseek-ai/dsh-experimental-client-ui-voice-input ^hf-mirror\.com$         # source label; the Host no longer offers this source
+@deepseek-ai/dsh-client-ui-primitives         ^(juejin\.cn|baidu\.com)$      # site-icon lookup table for links in chat
+@deepseek-ai/dsh-web-frontend                 ^(juejin\.cn|baidu\.com)$      # bundled copy of the same icon table
+@deepseek-ai/dsh-experimental-inspector       (baidu|aliyun|alicdn)\.com$|tbcdn\.cn$   # Chrome DevTools/Lighthouse third-party-domain database

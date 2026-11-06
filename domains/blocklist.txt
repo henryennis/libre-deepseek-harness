@@ -1,0 +1,15 @@
+# China-bound hosts that must not appear in shipped files (one JavaScript regex per line, then "# reason").
+# scripts/scan-domains.mjs fails the build on any match that domains/allowlist.txt does not excuse.
+deepseeksvc\.com                          # DeepSeek telemetry and service hosts
+(?<![\w.-])(download|download-test)\.deepseek\.com   # DeepSeek desktop update feed (Tencent COS, Beijing)
+platform\.deepseek\.com                   # DeepSeek account platform
+(?<![\w.-])(chat|login|passport|account)\.deepseek\.com  # DeepSeek account and sign-in hosts
+(api|api-docs)\.deepseek\.com             # DeepSeek API: allowed only for the opt-in DeepSeek provider
+npmmirror\.com                            # Alibaba-run npm mirror
+hf-mirror\.com                            # China-run Hugging Face mirror
+modelscope\.cn                            # Alibaba ModelScope model hub
+(feishu|larksuite|larkoffice|bytedance|volces|volcengine)\.(cn|com|net)  # ByteDance services
+(aliyun|alicdn|aliyuncs|alibabacloud)\.com          # Alibaba Cloud
+(qcloud|tencentcos|myqcloud|tencent-cloud)\.(com|cn) # Tencent Cloud
+(baidu|bdstatic|bcebos)\.com              # Baidu
+(?<![\w-])[a-z0-9-]+(\.[a-z0-9-]+)*\.cn(?![\w.-])  # any .cn host

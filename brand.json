@@ -1,0 +1,8 @@
+{
+  "APP_NAME": "Libre DeepSeek Harness",
+  "APP_NAME_SHORT": "Libre Harness",
+  "APP_ID": "io.github.henryennis.libre-deepseek-harness",
+  "BINARY_NAME": "dsh",
+  "GH_REPO": "henryennis/libre-deepseek-harness",
+  "RELEASES_URL": "https://github.com/henryennis/libre-deepseek-harness/releases"
+}

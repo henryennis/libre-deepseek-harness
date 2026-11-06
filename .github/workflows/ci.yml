@@ -1,0 +1,27 @@
+name: CI
+
+# Pull requests: the patch set must apply, build, pass the domain scan, and pass the tests of patched packages.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      DSH_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install -g pnpm@11.28.5
+      - run: node scripts/prepare.mjs
+      - run: node scripts/build.mjs
+      - name: Tests of patched packages
+        working-directory: harness
+        run: node node_modules/vitest/vitest.mjs run packages/mcp/mcp-client packages/boot/app-boot packages/boot/plugin-manager

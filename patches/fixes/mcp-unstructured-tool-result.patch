@@ -1,0 +1,52 @@
+MCP client: a tool that declares an output schema but answers with plain text only becomes a readable tool error instead of an opaque SDK ProtocolError.
+
+diff --git a/packages/mcp/mcp-client/src/tools.ts b/packages/mcp/mcp-client/src/tools.ts
+index 8f688c37..7cae57a7 100644
+--- a/packages/mcp/mcp-client/src/tools.ts
++++ b/packages/mcp/mcp-client/src/tools.ts
+@@ -151,11 +151,19 @@ export async function syncTools(
+       taskRequired: tool.execution?.taskSupport === 'required',
+       call: async (args, execution) => {
+         try {
+-          const result = await client.callTool(
++          // The SDK throws, discarding the server's text, when a tool that declares an output schema
++          // answers without structuredContent and without isError (some servers report upstream failures
++          // that way). The ToolRuntime still validates structuredContent against the declared schema, so
++          // the SDK check is skipped and such a result becomes a tool error the model can read and retry.
++          const { outputSchema: declaredOutputSchema, ...callDefinition } = tool
++          const answered = await client.callTool(
+             { name: tool.name, arguments: args },
+             { signal: AbortSignal.any([execution.signal, opts.signal]),
+-              timeout: opts.toolCallTimeoutMs, toolDefinition: tool },
++              timeout: opts.toolCallTimeoutMs, toolDefinition: callDefinition },
+           )
++          const result = declaredOutputSchema !== undefined && answered.structuredContent === undefined && answered.isError !== true
++            ? { ...answered, isError: true }
++            : answered
+           if (result.isError !== true || opts.redact === undefined) return result
+           return { isError: true, content: [{ type: 'text', text: opts.redact(extractText(result.content as JsonValue[], tool.name)) }] }
+         } catch (error) {
+diff --git a/packages/mcp/mcp-client/tests/mcp-client.spec.ts b/packages/mcp/mcp-client/tests/mcp-client.spec.ts
+index 9cac5373..27b031a3 100644
+--- a/packages/mcp/mcp-client/tests/mcp-client.spec.ts
++++ b/packages/mcp/mcp-client/tests/mcp-client.spec.ts
+@@ -886,6 +886,19 @@ describe('tool execution', () => {
+     expect('value' in result).toBe(false)
+   })
+ 
++  it('reports a schema-declaring tool answer without structuredContent as a readable tool error', async () => {
++    const client = createMockClient(
++      [{ name: 'search', inputSchema: { type: 'object' }, outputSchema: { type: 'object', properties: { ids: { type: 'array' } } } }],
++      { content: [{ type: 'text', text: '{"message":"External API error occurred.","code":"API_ERROR"}' }] },
++    )
++
++    await syncTools(client as never, ctx, defaultOpts, new Map())
++    const result = await executeToolFixture(ctx, { signal: testToolSignal, callId: ToolCallId('unstructured'), name: 'mcp__srv__search', arguments: {} })
++
++    expect(result.isError).toBe(true)
++    expect(result.content[0]).toEqual({ type: 'text', text: 'Error: {"message":"External API error occurred.","code":"API_ERROR"}' })
++  })
++
+   it('rejects tools that require task-based execution', async () => {
+     const client = createMockClient([
+       { name: 'task-only', inputSchema: { type: 'object' }, execution: { taskSupport: 'required' } },

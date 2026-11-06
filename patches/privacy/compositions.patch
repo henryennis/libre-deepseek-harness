@@ -1,0 +1,190 @@
+Composition switches: disable session telemetry, the session-log and plugin-inventory uploads on DeepSeek requests, DeepSeek account sign-in and panel, DeepSeek web search; turn off the DeepSeek-key first-run dialog; default to OpenRouter.
+
+diff --git a/packages/bundle/acp-app/cordis.patch.yml b/packages/bundle/acp-app/cordis.patch.yml
+index ca261faa..13551f0f 100644
+--- a/packages/bundle/acp-app/cordis.patch.yml
++++ b/packages/bundle/acp-app/cordis.patch.yml
+@@ -16,8 +16,8 @@
+       name: '@deepseek-ai/dsh-acp'
+       inject: [acpAppStartup]
+       config:
+-        provider: deepseek-official
+-        model: deepseek-v4-flash
++        provider: openrouter
++        model: anthropic/claude-sonnet-5.5
+ 
+ - id: hmr
+   disabled: true
+diff --git a/packages/bundle/base/cordis.patch.yml b/packages/bundle/base/cordis.patch.yml
+index d94f5cf2..5c9fe96c 100644
+--- a/packages/bundle/base/cordis.patch.yml
++++ b/packages/bundle/base/cordis.patch.yml
+@@ -42,6 +42,7 @@
+ 
+     - id: session-log-deepseek
+       name: '@deepseek-ai/dsh-session-log-deepseek'
++      disabled: true
+ 
+     - id: typert
+       name: '@deepseek-ai/dsh-typert-registry'
+@@ -84,14 +85,15 @@
+ 
+     - id: plugin-package-inventory-deepseek
+       name: '@deepseek-ai/dsh-plugin-package-inventory-deepseek'
++      disabled: true
+ 
+     # The transport-independent default for Agents created by entry points.
+     # Settings may supply a saved selection; consumers read it at creation time.
+     - id: agent-default-model
+       name: '@deepseek-ai/dsh-agent-default-model'
+       config:
+-        provider: deepseek-official
+-        model: deepseek-flash
++        provider: openrouter
++        model: anthropic/claude-sonnet-5.5
+ 
+     - id: jobs
+       name: '@deepseek-ai/dsh-jobs-local'
+@@ -119,6 +121,7 @@
+ 
+     - id: deepseek-account
+       name: '@deepseek-ai/dsh-deepseek-account-platform'
++      disabled: true
+       config:
+         desktopPlatform: !!js "ctx.get('profileContext')?.name === 'desktop' && ['darwin', 'win32'].includes(process.platform) ? process.platform : null"
+ 
+@@ -134,6 +137,10 @@
+     # document.
+     - id: llm-pi-ai
+       name: '@deepseek-ai/dsh-llm-pi-ai'
++      config:
++        providers:
++          openrouter:
++            apiKeyEnv: OPENROUTER_API_KEY
+ 
+     - id: session-persistence-jsonl
+       name: '@deepseek-ai/dsh-session-persistence-jsonl'
+@@ -217,12 +224,13 @@
+     # Every CLI exit path drains by disposing the root on SIGINT/SIGTERM.
+     - id: session-telemetry-otel
+       name: '@deepseek-ai/dsh-session-telemetry-otel'
++      disabled: true
+       config:
+         mode: !!js process.env.DSH_TELEMETRY_MODE || 'FEEDBACK_ONLY'
+         shutdownTimeoutMillis: 3000
+         maxRequestBytes: 4000000
+         exporter:
+-          url: !!js process.env.DSH_TELEMETRY_OTLP_URL ?? 'https://dsh-otel-collector.deepseeksvc.com/v1/logs'
++          url: !!js process.env.DSH_TELEMETRY_OTLP_URL ?? 'http://127.0.0.1:4318/v1/logs'
+           compression: gzip
+           timeoutMillis: 1000
+         processor:
+@@ -482,16 +490,17 @@
+     - id: web
+       name: '@deepseek-ai/dsh-web'
+       config:
+-        searchProvider: deepseek-search-api
+         fetchProvider: http
+ 
+     - id: web-search-deepseek
+       name: '@deepseek-ai/dsh-web-search-deepseek'
++      disabled: true
+       config:
+         apiKeyEnv: DEEPSEEK_API_KEY
+ 
+     - id: web-deepseek-api
+       name: '@deepseek-ai/dsh-web-deepseek-api'
++      disabled: true
+ 
+     - id: web-fetch-http
+       name: '@deepseek-ai/dsh-web-fetch-http'
+@@ -499,6 +508,7 @@
+     - id: tool-web
+       name: '@deepseek-ai/dsh-tool-web'
+       config:
++        search: false
+         fetch: true
+         searchTimeoutMs: 60000
+ 
+@@ -546,3 +556,4 @@
+ 
+     - id: llm-deepseek-account
+       name: '@deepseek-ai/dsh-llm-deepseek-account'
++      disabled: true
+diff --git a/packages/bundle/sdk-minimal/cordis.patch.yml b/packages/bundle/sdk-minimal/cordis.patch.yml
+index e46eed1e..456a7687 100644
+--- a/packages/bundle/sdk-minimal/cordis.patch.yml
++++ b/packages/bundle/sdk-minimal/cordis.patch.yml
+@@ -19,9 +19,11 @@
+ 
+     - id: session-log-deepseek
+       name: '@deepseek-ai/dsh-session-log-deepseek'
++      disabled: true
+ 
+     - id: plugin-package-inventory-deepseek
+       name: '@deepseek-ai/dsh-plugin-package-inventory-deepseek'
++      disabled: true
+ 
+     - id: llm-deepseek
+       name: '@deepseek-ai/dsh-llm-deepseek-api-key'
+diff --git a/packages/bundle/web-app/cordis.patch.yml b/packages/bundle/web-app/cordis.patch.yml
+index 5808cf01..1d20d7ab 100644
+--- a/packages/bundle/web-app/cordis.patch.yml
++++ b/packages/bundle/web-app/cordis.patch.yml
+@@ -139,9 +139,11 @@
+     # reports an actionable error when its settings-domain provider is absent.
+     - id: ui-settings-account
+       name: '@deepseek-ai/dsh-client-ui-settings-account'
++      disabled: true
+ 
+     - id: account-controller
+       name: '@deepseek-ai/dsh-api-account-controller'
++      disabled: true
+ 
+     - id: settings-controller
+       name: '@deepseek-ai/dsh-api-settings-controller'
+@@ -315,6 +317,8 @@
+ 
+     - id: ui-settings-models
+       name: '@deepseek-ai/dsh-client-ui-settings-models'
++      config:
++        credentialOnboarding: false
+ 
+     # Plugin management: the sidebar Plugins page installs, enables, disables,
+     # and removes the profile's bundles through the `pluginManager` Remote.
+diff --git a/packages/bundle/web-app/presets/cordis.patch.yml b/packages/bundle/web-app/presets/cordis.patch.yml
+index 4494bb15..2f8ec7b8 100644
+--- a/packages/bundle/web-app/presets/cordis.patch.yml
++++ b/packages/bundle/web-app/presets/cordis.patch.yml
+@@ -117,6 +117,7 @@
+           - id: tool-web
+             name: '@deepseek-ai/dsh-tool-web'
+             config:
++              search: false
+               fetch: true
+               searchTimeoutMs: 60000
+           - id: tool-cordis
+diff --git a/packages/bundle/web-app/presets/ptc.patch.yml b/packages/bundle/web-app/presets/ptc.patch.yml
+index 67869207..1b41e6e4 100644
+--- a/packages/bundle/web-app/presets/ptc.patch.yml
++++ b/packages/bundle/web-app/presets/ptc.patch.yml
+@@ -120,6 +120,7 @@
+           - id: tool-web
+             name: '@deepseek-ai/dsh-tool-web'
+             config:
++              search: false
+               fetch: true
+               searchTimeoutMs: 60000
+           - id: tool-executor-ptc
+diff --git a/packages/bundle/web-app/presets/standard.patch.yml b/packages/bundle/web-app/presets/standard.patch.yml
+index e2e619fd..ecefb718 100644
+--- a/packages/bundle/web-app/presets/standard.patch.yml
++++ b/packages/bundle/web-app/presets/standard.patch.yml
+@@ -118,6 +118,7 @@
+           - id: tool-web
+             name: '@deepseek-ai/dsh-tool-web'
+             config:
++              search: false
+               fetch: true
+               searchTimeoutMs: 60000
+           - id: present

@@ -1,0 +1,29 @@
+Always disable session-log telemetry to dsh-otel-collector.deepseeksvc.com (overrides DSH_TELEMETRY_DISABLED) and point the product-telemetry fallback endpoint at 127.0.0.1.
+
+diff --git a/packages/boot/app-boot/src/profile-context.ts b/packages/boot/app-boot/src/profile-context.ts
+index e2ebfad5..0509cbb8 100644
+--- a/packages/boot/app-boot/src/profile-context.ts
++++ b/packages/boot/app-boot/src/profile-context.ts
+@@ -50,7 +50,8 @@ const TELEMETRY_ROW_ID = 'session-telemetry-otel'
+  * @returns the disable patch, or `undefined` when no hard-disable patch is required.
+  */
+ export function resolveTelemetryPatch(disabledEnv: string | undefined, hasRow: boolean): PatchOptions | undefined {
+-  if ((disabledEnv ?? '') === '' || !hasRow) return undefined
++  void disabledEnv // unchinad build: telemetry is always off
++  if (!hasRow) return undefined
+   return { id: TELEMETRY_ROW_ID, disabled: true }
+ }
+ 
+diff --git a/packages/host/product-telemetry-otel/src/index.ts b/packages/host/product-telemetry-otel/src/index.ts
+index 6a43deb8..d533efa8 100644
+--- a/packages/host/product-telemetry-otel/src/index.ts
++++ b/packages/host/product-telemetry-otel/src/index.ts
+@@ -44,7 +44,7 @@ const positiveInteger = () => z.number().step(1).min(1).max(2_147_483_647)
+ 
+ /** Loader validation and defaults for application compositions. */
+ export const Config: z<Partial<Config>, Config> = z.object({
+-  endpoint: z.string().default('https://dsh-otel-collector.deepseeksvc.com/v1/logs'),
++  endpoint: z.string().default('http://127.0.0.1:4318/v1/logs'),
+   channel: z.string().min(1).default('dsh_otel_report'),
+   serviceName: z.string().required(),
+   serviceVersion: z.string().required(),

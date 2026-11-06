@@ -1,0 +1,104 @@
+name: Upstream sync
+
+# Daily: if deepseek-ai/deepseek-harness has a new commit, pin it, apply the patch set and build.
+# If anything fails, Claude Code repairs the patch set. Either way the result arrives as a pull request;
+# merging it triggers the release workflow.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Upstream commit to pin (default: latest on the tracked branch)
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DSH_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm install -g pnpm@11.28.5
+
+      - name: Find the upstream commit
+        id: upstream
+        run: |
+          pinned=$(node -p "require('./upstream.json').commit")
+          latest=$(node scripts/pin-upstream.mjs ${{ inputs.commit }})
+          echo "sha=$latest" >> "$GITHUB_OUTPUT"
+          echo "short=${latest:0:12}" >> "$GITHUB_OUTPUT"
+          if [ "$latest" = "$pinned" ]; then echo "changed=false" >> "$GITHUB_OUTPUT"; else echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+          if gh pr list --state open --head "upstream/${latest:0:12}" --json number --jq 'length' | grep -qv '^0$'; then
+            echo "open_pr=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare and build
+        id: build
+        if: steps.upstream.outputs.changed == 'true' && steps.upstream.outputs.open_pr != 'true'
+        continue-on-error: true
+        run: node scripts/prepare.mjs && node scripts/build.mjs
+
+      - name: Repair the patch set with Claude Code
+        id: repair
+        if: steps.build.outcome == 'failure'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            Upstream deepseek-ai/deepseek-harness moved to ${{ steps.upstream.outputs.sha }} and the patch set no longer
+            prepares, builds or passes the domain scan. Read .github/claude/repair-patches.md and follow it exactly.
+          claude_args: --max-turns 120 --allowedTools "Bash,Read,Edit,Write,Glob,Grep"
+
+      - name: Verify the repaired patch set
+        if: steps.build.outcome == 'failure'
+        run: node scripts/prepare.mjs && node scripts/build.mjs --skip-install
+
+      - name: Open the pull request
+        if: steps.upstream.outputs.changed == 'true' && steps.upstream.outputs.open_pr != 'true'
+        run: |
+          branch="upstream/${{ steps.upstream.outputs.short }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          summary=".github/claude/last-repair.md"
+          {
+            echo "Pins upstream deepseek-ai/deepseek-harness at ${{ steps.upstream.outputs.sha }}."
+            echo
+            if [ "${{ steps.build.outcome }}" = "failure" ]; then
+              echo "The patch set needed repair. Claude Code's summary:"
+              echo
+              [ -f "$summary" ] && cat "$summary" || echo "(no summary written)"
+            else
+              echo "All patches applied cleanly; build and domain scan passed."
+            fi
+            echo
+            echo "Upstream changes: https://github.com/deepseek-ai/deepseek-harness/compare/$(git show HEAD:upstream.json | node -p 'JSON.parse(require("fs").readFileSync(0)).commit')...${{ steps.upstream.outputs.sha }}"
+            echo
+            echo "Merging publishes a release."
+          } > pr-body.md
+          rm -f "$summary"
+          git add -A upstream.json patches domains
+          git commit -m "Pin upstream ${{ steps.upstream.outputs.short }}"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" --title "Upstream ${{ steps.upstream.outputs.short }}" --body-file pr-body.md

@@ -1,0 +1,66 @@
+Remove registry.npmmirror.com (China) as plugin-install fallback registry, background ping target and default file CDN.
+
+diff --git a/packages/boot/plugin-manager/src/index.ts b/packages/boot/plugin-manager/src/index.ts
+index b1d696ad..ba9335f2 100644
+--- a/packages/boot/plugin-manager/src/index.ts
++++ b/packages/boot/plugin-manager/src/index.ts
+@@ -32,7 +32,7 @@ import { bundleManifest, readProfileRegistry, registryArguments, runProfilePnpm,
+ import { classifyInstallFailure } from './install-failure.ts'
+ import { officialBundleInstallTarget } from './official-install-target.ts'
+ import { dependencySpec, InvalidInstallSpecError, parseInstallSpec, type ParsedInstallSpec } from './install-spec.ts'
+-import { attributeFailure, normalizeRegistry, NPMMIRROR_REGISTRY, registryPlan } from './registry.ts'
++import { attributeFailure, normalizeRegistry, registryPlan } from './registry.ts'
+ import { flatten, writePluginEnabled } from './patch.ts'
+ import { incompatiblePlugin, ManagementFailure } from './failure.ts'
+ import { approveBuilds, recordPendingBuilds } from './build-approval.ts'
+@@ -320,13 +320,13 @@ export class PluginManager extends TypertRemoteService {
+     gitTransportTimeoutMs: z.number().step(1).min(1000).default(5000),
+     idleTimeoutMs: z.number().step(1).min(1000).default(600000),
+     registry: z.string().pattern(REGISTRY_URL),
+-    fallbackRegistries: z.array(z.string().pattern(REGISTRY_URL)).default([NPMMIRROR_REGISTRY]),
++    fallbackRegistries: z.array(z.string().pattern(REGISTRY_URL)).default([] as string[]),
+     versionListLimit: z.number().step(1).min(1).default(20),
+     versionLookupConcurrency: z.number().step(1).min(1).default(4),
+     detailMaxBytes: z.natural().min(1).default(1024 * 1024),
+     detailImageMaxBytes: z.natural().min(1).default(5 * 1024 * 1024),
+     detailFetchTimeoutMs: z.natural().min(1).max(MAX_TIMER_DELAY_MS).default(15000),
+-    detailNpmFileSources: z.array(z.union(NPM_FILE_SOURCES)).min(1).default([...NPM_FILE_SOURCES]),
++    detailNpmFileSources: z.array(z.union(NPM_FILE_SOURCES)).min(1).default(['jsdelivr', 'unpkg'] as NpmFileSource[]),
+   })
+   /** Management bundles remain protected if their files become unreadable. */
+   private readonly managementBundles = new Set<string>()
+diff --git a/packages/boot/plugin-market/src/index.ts b/packages/boot/plugin-market/src/index.ts
+index b64d36e7..336a8e32 100644
+--- a/packages/boot/plugin-market/src/index.ts
++++ b/packages/boot/plugin-market/src/index.ts
+@@ -119,7 +119,7 @@ export default class PluginMarket extends TypertRemoteService {
+     detailCacheMaxBytes: z.natural().min(1).default(500 * 1024 * 1024),
+     detailCacheDir: z.string(),
+     detailGitTimeoutMs: z.natural().min(1).max(MAX_TIMER_DELAY_MS).default(60000),
+-    detailNpmFileSources: z.array(z.union(NPM_FILE_SOURCES)).min(1).default([...NPM_FILE_SOURCES]),
++    detailNpmFileSources: z.array(z.union(NPM_FILE_SOURCES)).min(1).default(['jsdelivr', 'unpkg'] as NpmFileSource[]),
+     detailGitlabHosts: z.array(z.string()).default(['gitlab.com']),
+   })
+ 
+diff --git a/packages/client/ui-plugin-manager/src/index.ts b/packages/client/ui-plugin-manager/src/index.ts
+index 2956ba10..b10df404 100644
+--- a/packages/client/ui-plugin-manager/src/index.ts
++++ b/packages/client/ui-plugin-manager/src/index.ts
+@@ -24,7 +24,7 @@ export interface Config {
+ /** Compares public registry responses on the Host; the Client owns the initial selection. */
+ export default class PluginRegistryProbe extends TypertRemoteService {
+   static Config: z<Partial<Config>, Config> = z.object({
+-    registryProbeEnabled: z.boolean().default(true),
++    registryProbeEnabled: z.boolean().default(false),
+     registryProbeTimeoutMs: z.natural().min(1).max(MAX_TIMER_DELAY_MS).default(1500),
+     registryProbeCacheTtlMs: z.natural().default(300000),
+   })
+@@ -59,7 +59,7 @@ export default class PluginRegistryProbe extends TypertRemoteService {
+   private async probe(): Promise<string | null> {
+     const finished = new AbortController()
+     const signal = AbortSignal.any([this.lifetime.signal, finished.signal, AbortSignal.timeout(this.config.registryProbeTimeoutMs)])
+-    const requests = ['https://registry.npmjs.org/-/ping', 'https://registry.npmmirror.com/-/ping'].map(async endpoint => ({
++    const requests = ['https://registry.npmjs.org/-/ping'].map(async endpoint => ({
+       registry: new URL('/', endpoint).href,
+       response: await fetch(endpoint, { signal, redirect: 'error' }),
+     }))
