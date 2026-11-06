@@ -29,6 +29,42 @@ index b1d696ad..ba9335f2 100644
    })
    /** Management bundles remain protected if their files become unreadable. */
    private readonly managementBundles = new Set<string>()
+diff --git a/packages/boot/plugin-manager/tests/bundle-detail.spec.ts b/packages/boot/plugin-manager/tests/bundle-detail.spec.ts
+index dc3ad0c2..083a8739 100644
+--- a/packages/boot/plugin-manager/tests/bundle-detail.spec.ts
++++ b/packages/boot/plugin-manager/tests/bundle-detail.spec.ts
+@@ -123,7 +123,8 @@ it('reads an offered official bundle from the npm CDNs at its offered version, n
+     ? new Response('# Official')
+     : url.includes('/files/') ? new Response('missing', { status: 404 }) : Promise.reject(new Error(`unexpected ${url}`))))
+   vi.stubGlobal('fetch', fetch)
+-  const { manager, image } = await fixture()
++  // npmmirror is no longer a default file source in this build; configure it to cover the preference path.
++  const { manager, image } = await fixture({ detailNpmFileSources: ['jsdelivr', 'unpkg', 'npmmirror'] })
+   expect(await manager.readBundleDetail(name, 'en', { npmFileSources: ['npmmirror'] })).toEqual({ status: 'found', origin: 'readme', path: 'README.md', markdown: '# Official' })
+   expect(fetch.mock.calls[0]?.[0]).toBe(`https://registry.npmmirror.com/${name}/${version}/files/locale/en.json`)
+   fetch.mockClear()
+diff --git a/packages/boot/plugin-manager/tests/manager.spec.ts b/packages/boot/plugin-manager/tests/manager.spec.ts
+index 8187c45a..865fe820 100644
+--- a/packages/boot/plugin-manager/tests/manager.spec.ts
++++ b/packages/boot/plugin-manager/tests/manager.spec.ts
+@@ -56,7 +56,8 @@ async function fixture(reload: 'live' | 'startup' = 'live', overlay = false, pre
+     writeFileSync(join(path, 'cordis.patch.yml'), JSON.stringify([{ insert: rows }]))
+     writeFileSync(join(path, 'plugin.mjs'), 'export function apply(ctx, config) { if (config?.fail) throw new Error("test activation failed"); ctx.provide(config?.service ?? "managedProbe", true) }\n')
+   }
+-  bundle('core', [{ id: 'manager', name: 'cordis:manager', config }])
++  // This build ships no fallback registry; the fixture configures one so the fallback behavior stays covered.
++  bundle('core', [{ id: 'manager', name: 'cordis:manager', config: { fallbackRegistries: ['https://registry.npmmirror.com/'], ...config } }])
+   bundle('extra', [{ id: 'managed', name: './plugin.mjs' }])
+   const manifest = readProfileManifest('test', dir)
+   manifest.dependencies = { extra: '1.0.0' }
+@@ -1710,6 +1711,7 @@ it('reports a stop that lands before a run starts, while the registries are read
+ })
+ 
+ it('answers the configured registries in pnpm\'s comparison form with what pnpm names, and refuses one that is not an http(s) URL at load', async () => {
++  expect(PluginManager.Config({}).fallbackRegistries).toEqual([])
+   expect(await (await fixture()).manager.registries()).toEqual({ registry: null, fallbackRegistries: [MIRROR], resolved: OFFICIAL })
+   const { manager } = await fixture(undefined, false, undefined, { registry: 'https://NPM.corp.example', fallbackRegistries: [] })
+   expect(await manager.registries()).toEqual({ registry: 'https://npm.corp.example/', fallbackRegistries: [], resolved: OFFICIAL })
 diff --git a/packages/boot/plugin-market/src/index.ts b/packages/boot/plugin-market/src/index.ts
 index b64d36e7..336a8e32 100644
 --- a/packages/boot/plugin-market/src/index.ts
