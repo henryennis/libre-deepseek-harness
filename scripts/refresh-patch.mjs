@@ -19,8 +19,17 @@ const file = join(root, 'patches', name)
 
 execFileSync('git', ['-C', harness, 'add', '-A'], { stdio: 'ignore' })
 execFileSync('git', ['-C', harness, 'reset', '--quiet', '--', '.libre-prepared.json'], { stdio: 'ignore' })
-const diff = execFileSync('git', ['-C', harness, 'diff', '--cached', '--no-color', 'HEAD'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+let diff = execFileSync('git', ['-C', harness, 'diff', '--cached', '--no-color', 'HEAD'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
 if (diff.trim() === '') throw new Error('refresh-patch: ./harness has no changes on top of the last applied patch')
+// prepare.mjs filled !!PLACEHOLDERS!! from brand.json; turn distinctive brand values in added lines back into
+// placeholders so a refreshed patch keeps following brand.json. Short values (like the CLI name) are left alone.
+const brand = Object.entries(JSON.parse(readFileSync(join(root, 'brand.json'), 'utf8')))
+  .filter(([, value]) => value.length >= 12).sort(([, a], [, b]) => b.length - a.length)
+diff = diff.split('\n').map((line) => {
+  if (!line.startsWith('+') || line.startsWith('+++')) return line
+  for (const [key, value] of brand) line = line.replaceAll(value, `!!${key}!!`)
+  return line
+}).join('\n')
 
 let description = values.message
 if (description === undefined && existsSync(file)) description = readFileSync(file, 'utf8').split(/^diff --git /mu)[0].trim()

@@ -4,3 +4,4 @@ dist/
 app/
 node_modules/
 *.log
+.tools/

@@ -12,7 +12,7 @@
 // Usage: node scripts/prepare.mjs [--commit <sha>] [--stop-before <patch>]
 //   --commit overrides upstream.json, e.g. to try a newer upstream
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -80,5 +80,13 @@ for (const [index, name] of series.entries()) {
 }
 rmSync(scratch, { recursive: true, force: true })
 const complete = applied.length === series.length
+// Binary artwork cannot travel in text patches: brand/overlay mirrors harness paths and replaces those files.
+const overlay = join(root, 'brand', 'overlay')
+if (complete && existsSync(overlay)) {
+  cpSync(overlay, harness, { recursive: true })
+  execFileSync('git', ['-C', harness, 'add', '-A'], { stdio: 'ignore' })
+  record('overlay: brand/overlay')
+  console.log('prepare: copied brand/overlay')
+}
 writeFileSync(join(harness, '.libre-prepared.json'), `${JSON.stringify({ commit, complete, patches: applied }, null, 2)}\n`)
 console.log(`prepare: ${applied.length}/${series.length} patches applied on ${commit.slice(0, 12)}`)

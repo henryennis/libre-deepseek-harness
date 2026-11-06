@@ -1,0 +1,25 @@
+Desktop auto-update: always embed an update feed (signed or unsigned) pointing at this fork's GitHub Releases instead of download.deepseek.com (Tencent COS, Beijing). electron-updater's generic provider reads <channel>.yml, the installer and its blockmap from the latest release.
+
+diff --git a/apps/desktop/scripts/electron-builder-config.mjs b/apps/desktop/scripts/electron-builder-config.mjs
+index d5522e3d..6f5d6265 100644
+--- a/apps/desktop/scripts/electron-builder-config.mjs
++++ b/apps/desktop/scripts/electron-builder-config.mjs
+@@ -20,7 +20,7 @@ import {
+   resolveWindowsUpdatePublisher,
+   scrubWindowsSigningEnvironment,
+ } from './windows-sign.mjs'
+-import { resolveDesktopAutoUpdateConfig } from './desktop-auto-update-environment.mjs'
++import { resolveDesktopUpdateChannel } from './desktop-auto-update-environment.mjs'
+ import { resolveDesktopBuildCommit } from './desktop-build-commit.mjs'
+ import { resolveDesktopBuildVersion } from './desktop-build-version.mjs'
+ import { resolveDesktopPolicyEnvironment } from './desktop-policy-environment.mjs'
+@@ -99,7 +99,8 @@ export function createElectronBuilderConfig(
+   if (windowsSigner !== undefined) {
+     installWindowsNsisBootstrapSigner({ sign: windowsSigner })
+   }
+-  const update = unsigned ? undefined : resolveDesktopAutoUpdateConfig(env, resolvedPlatform, resolvedArch)
++  // Updates come from this fork's GitHub Releases for signed and unsigned builds alike.
++  const update = { channel: resolveDesktopUpdateChannel(env), publicUrl: '!!RELEASES_URL!!/latest/download/' }
+   if (preparedRuntime !== undefined) buildPaths.dsh = preparedRuntime
+   // electron-builder merges extraMetadata into the packaged manifest, so a build version here reaches
+   // the artifact names, the update feed, and the installed app.getVersion() the updater compares against.

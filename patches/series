@@ -10,3 +10,8 @@ privacy/compositions.patch
 
 # Fixes that are not privacy-related.
 fixes/mcp-unstructured-tool-result.patch
+desktop/update-feed-github-releases.patch
+desktop/no-mandatory-update-service.patch
+privacy/desktop-analytics-off.patch
+desktop/welcome-openrouter-key.patch
+brand/desktop-name.patch

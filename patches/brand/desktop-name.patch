@@ -1,0 +1,882 @@
+Rebrand the desktop app so it installs and runs beside the official one and does not present as DeepSeek's product: product, executable, installer and artifact names, package name (own userData folder, single-instance lock and updater cache), protocol label, every product-name string in the shell, installer and web title, and the sidebar build label. Values come from brand.json.
+
+diff --git a/apps/desktop/cli/dsh.cmd b/apps/desktop/cli/dsh.cmd
+index 73af3353..0cbca581 100644
+--- a/apps/desktop/cli/dsh.cmd
++++ b/apps/desktop/cli/dsh.cmd
+@@ -1,5 +1,5 @@
+ @echo off
+ setlocal DisableDelayedExpansion
+ set "ELECTRON_RUN_AS_NODE=1"
+-"%~dp0..\..\..\..\DeepSeek Harness.exe" --expose-internals "%~dp0..\..\..\app.asar\dsh\node_modules\@deepseek-ai\dsh-desktop-host\lib\cli.js" %*
++"%~dp0..\..\..\..\!!APP_NAME!!.exe" --expose-internals "%~dp0..\..\..\app.asar\dsh\node_modules\@deepseek-ai\dsh-desktop-host\lib\cli.js" %*
+ exit /b %errorlevel%
+diff --git a/apps/desktop/installer/extract-report.h b/apps/desktop/installer/extract-report.h
+index cdfbbad2..4de28f1d 100644
+--- a/apps/desktop/installer/extract-report.h
++++ b/apps/desktop/installer/extract-report.h
+@@ -114,7 +114,7 @@ inline std::wstring Headline(int code, const std::wstring& output, const std::ws
+ 
+ inline std::wstring Compose(int code, const std::wstring& archive, const std::wstring& destination, const std::wstring& output,
+                             const std::wstring& timestamp, const std::wstring& windowsVersion) {
+-    std::wstring report = L"DeepSeek Harness installer: extraction failed\r\n";
++    std::wstring report = L"!!APP_NAME!! installer: extraction failed\r\n";
+     report += L"Time: " + timestamp + L"\r\n";
+     report += L"Result: " + DescribeResult(code) + L"\r\n";
+     report += L"Archive: " + archive + L"\r\n";
+diff --git a/apps/desktop/installer/locales/de_DE.json b/apps/desktop/installer/locales/de_DE.json
+index faf725b8..23b1bd67 100644
+--- a/apps/desktop/installer/locales/de_DE.json
++++ b/apps/desktop/installer/locales/de_DE.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "Standort wählen",
+     "INSTALLER_BROWSE": "Durchsuchen",
+     "INSTALLER_LAUNCH": "Jetzt starten",
+-    "INSTALLER_LAUNCH_FAILED": "DeepSeek Harness konnte nicht gestartet werden. Versuchen Sie es noch einmal oder deaktivieren Sie „Jetzt starten“ und schließen Sie das Installationsprogramm.",
++    "INSTALLER_LAUNCH_FAILED": "!!APP_NAME!! konnte nicht gestartet werden. Versuchen Sie es noch einmal oder deaktivieren Sie „Jetzt starten“ und schließen Sie das Installationsprogramm.",
+     "INSTALLER_UI_ERROR": "Das Installationsprogramm konnte sein Fenster nicht initialisieren. Schließen Sie es und versuchen Sie es erneut.",
+     "INSTALLER_THEME_ERROR": "Verwenden Sie /THEME=auto, /THEME=light oder /THEME=dark.",
+     "INSTALLER_FAILED": "Die Installation wurde nicht abgeschlossen. Schließen Sie dieses Installationsprogramm und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, laden Sie das Installationsprogramm erneut herunter.",
+-    "INSTALLER_RUNNING": "DeepSeek Harness läuft. Beenden Sie es über die Taskleiste und versuchen Sie es erneut.",
++    "INSTALLER_RUNNING": "!!APP_NAME!! läuft. Beenden Sie es über die Taskleiste und versuchen Sie es erneut.",
+     "INSTALLER_DIRECTORY_FAILED": "Das Installationsverzeichnis konnte nicht ersetzt werden.",
+     "INSTALLER_DIRECTORY_HINT": "Überprüfen Sie den Zugriff auf das Installationsverzeichnis und schließen Sie Programme mithilfe seiner Dateien. Führen Sie dann das Installationsprogramm erneut aus. Kopieren Sie die Fehlerdetails, wenn das Problem weiterhin besteht.",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "Die vorherige Installation konnte nicht wiederhergestellt werden. Behalten Sie das in den Fehlerdetails angezeigte Sicherungsverzeichnis bei und wenden Sie sich vor der erneuten Installation an den Support.",
+     "INSTALLER_PATH_INVALID": "Wählen Sie einen vollständigen lokalen Ordnerpfad. Laufwerksstämme, Systemordner, Links und Sonderzeichen werden nicht unterstützt.",
+-    "INSTALLER_PATH_OWNERSHIP": "Wählen Sie einen leeren Ordner oder den registrierten DeepSeek Harness-Installationsordner.",
++    "INSTALLER_PATH_OWNERSHIP": "Wählen Sie einen leeren Ordner oder den registrierten !!APP_NAME!!-Installationsordner.",
+     "INSTALLER_PATH_WRITABLE": "Dieser Ort ist nicht beschreibbar. Wählen Sie einen Ordner, der für den aktuellen Benutzer verfügbar ist.",
+     "INSTALLER_DISK_SPACE": "Es ist nicht genügend freier Speicherplatz vorhanden. Wählen Sie einen anderen Standort.",
+     "INSTALLER_PER_USER": "Dieses Installationsprogramm unterstützt nur den aktuellen Benutzer. Deinstallieren Sie zunächst die vorhandene All-User-Installation.",
+diff --git a/apps/desktop/installer/locales/en_US.json b/apps/desktop/installer/locales/en_US.json
+index f522ad9b..6e3227b5 100644
+--- a/apps/desktop/installer/locales/en_US.json
++++ b/apps/desktop/installer/locales/en_US.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "Choose location",
+     "INSTALLER_BROWSE": "Browse",
+     "INSTALLER_LAUNCH": "Launch now",
+-    "INSTALLER_LAUNCH_FAILED": "DeepSeek Harness could not be launched. Retry, or clear Launch now and close the installer.",
++    "INSTALLER_LAUNCH_FAILED": "!!APP_NAME!! could not be launched. Retry, or clear Launch now and close the installer.",
+     "INSTALLER_UI_ERROR": "The installer could not initialize its window. Close it and try again.",
+     "INSTALLER_THEME_ERROR": "Use /THEME=auto, /THEME=light or /THEME=dark.",
+     "INSTALLER_FAILED": "Installation did not finish. Close this installer and retry. If the problem persists, download the installer again.",
+-    "INSTALLER_RUNNING": "DeepSeek Harness is running. Quit it from the system tray and try again.",
++    "INSTALLER_RUNNING": "!!APP_NAME!! is running. Quit it from the system tray and try again.",
+     "INSTALLER_DIRECTORY_FAILED": "The installation directory could not be replaced.",
+     "INSTALLER_DIRECTORY_HINT": "Check access to the installation directory and close programs using its files, then run the installer again. Copy the error details if the problem persists.",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "The previous installation could not be restored. Keep the backup directory shown in the error details and contact support before installing again.",
+     "INSTALLER_PATH_INVALID": "Choose a full local folder path. Drive roots, system folders, links and special characters are not supported.",
+-    "INSTALLER_PATH_OWNERSHIP": "Choose an empty folder or the registered DeepSeek Harness installation folder.",
++    "INSTALLER_PATH_OWNERSHIP": "Choose an empty folder or the registered !!APP_NAME!! installation folder.",
+     "INSTALLER_PATH_WRITABLE": "This location is not writable. Choose a folder available to the current user.",
+     "INSTALLER_DISK_SPACE": "There is not enough free disk space. Choose another location.",
+     "INSTALLER_PER_USER": "This installer supports the current user only. Uninstall the existing all-users installation first.",
+diff --git a/apps/desktop/installer/locales/es_ES.json b/apps/desktop/installer/locales/es_ES.json
+index d4fbfd97..cf5dbfc7 100644
+--- a/apps/desktop/installer/locales/es_ES.json
++++ b/apps/desktop/installer/locales/es_ES.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "Elige ubicación",
+     "INSTALLER_BROWSE": "Examinar",
+     "INSTALLER_LAUNCH": "Lanzar ahora",
+-    "INSTALLER_LAUNCH_FAILED": "No se pudo iniciar DeepSeek Harness. Vuelva a intentarlo o desmarque Iniciar ahora y cierre el instalador.",
++    "INSTALLER_LAUNCH_FAILED": "No se pudo iniciar !!APP_NAME!!. Vuelva a intentarlo o desmarque Iniciar ahora y cierre el instalador.",
+     "INSTALLER_UI_ERROR": "El instalador no pudo inicializar su ventana. Ciérralo y vuelve a intentarlo.",
+     "INSTALLER_THEME_ERROR": "Utilice /THEME=auto, /THEME=light o /THEME=dark.",
+     "INSTALLER_FAILED": "La instalación no terminó. Cierre este instalador y vuelva a intentarlo. Si el problema persiste, descargue el instalador nuevamente.",
+-    "INSTALLER_RUNNING": "DeepSeek Harness se está ejecutando. Salga de la bandeja del sistema y vuelva a intentarlo.",
++    "INSTALLER_RUNNING": "!!APP_NAME!! se está ejecutando. Salga de la bandeja del sistema y vuelva a intentarlo.",
+     "INSTALLER_DIRECTORY_FAILED": "No se pudo reemplazar el directorio de instalación.",
+     "INSTALLER_DIRECTORY_HINT": "Verifique el acceso al directorio de instalación y cierre los programas usando sus archivos, luego ejecute el instalador nuevamente. Copie los detalles del error si el problema persiste.",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "No se pudo restaurar la instalación anterior. Mantenga el directorio de respaldo que se muestra en los detalles del error y comuníquese con el soporte antes de volver a instalar.",
+     "INSTALLER_PATH_INVALID": "Elija una ruta de carpeta local completa. No se admiten raíces de unidades, carpetas del sistema, enlaces ni caracteres especiales.",
+-    "INSTALLER_PATH_OWNERSHIP": "Elija una carpeta vacía o la carpeta de instalación registrada de DeepSeek Harness.",
++    "INSTALLER_PATH_OWNERSHIP": "Elija una carpeta vacía o la carpeta de instalación registrada de !!APP_NAME!!.",
+     "INSTALLER_PATH_WRITABLE": "Esta ubicación no se puede escribir. Elija una carpeta disponible para el usuario actual.",
+     "INSTALLER_DISK_SPACE": "No hay suficiente espacio libre en disco. Elija otra ubicación.",
+     "INSTALLER_PER_USER": "Este instalador solo admite el usuario actual. Primero desinstale la instalación existente para todos los usuarios.",
+diff --git a/apps/desktop/installer/locales/fr_FR.json b/apps/desktop/installer/locales/fr_FR.json
+index 326ead62..e05d5851 100644
+--- a/apps/desktop/installer/locales/fr_FR.json
++++ b/apps/desktop/installer/locales/fr_FR.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "Choisissez un emplacement",
+     "INSTALLER_BROWSE": "Parcourir",
+     "INSTALLER_LAUNCH": "Lancez-vous maintenant",
+-    "INSTALLER_LAUNCH_FAILED": "DeepSeek Harness n'a pas pu être lancé. Réessayez ou désactivez Lancer maintenant et fermez le programme d'installation.",
++    "INSTALLER_LAUNCH_FAILED": "!!APP_NAME!! n'a pas pu être lancé. Réessayez ou désactivez Lancer maintenant et fermez le programme d'installation.",
+     "INSTALLER_UI_ERROR": "Le programme d'installation n'a pas pu initialiser sa fenêtre. Fermez-le et réessayez.",
+     "INSTALLER_THEME_ERROR": "Utilisez /THEME=auto, /THEME=light ou /THEME=dark.",
+     "INSTALLER_FAILED": "L'installation n'est pas terminée. Fermez ce programme d'installation et réessayez. Si le problème persiste, téléchargez à nouveau le programme d'installation.",
+-    "INSTALLER_RUNNING": "DeepSeek Harness est en cours d'exécution. Quittez-le de la barre d'état système et réessayez.",
++    "INSTALLER_RUNNING": "!!APP_NAME!! est en cours d'exécution. Quittez-le de la barre d'état système et réessayez.",
+     "INSTALLER_DIRECTORY_FAILED": "Le répertoire d'installation n'a pas pu être remplacé.",
+     "INSTALLER_DIRECTORY_HINT": "Vérifiez l'accès au répertoire d'installation et fermez les programmes à l'aide de ses fichiers, puis réexécutez le programme d'installation. Copiez les détails de l'erreur si le problème persiste.",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "L'installation précédente n'a pas pu être restaurée. Conservez le répertoire de sauvegarde indiqué dans les détails de l'erreur et contactez l'assistance avant de procéder à une nouvelle installation.",
+     "INSTALLER_PATH_INVALID": "Choisissez un chemin de dossier local complet. Les racines du lecteur, les dossiers système, les liens et les caractères spéciaux ne sont pas pris en charge.",
+-    "INSTALLER_PATH_OWNERSHIP": "Choisissez un dossier vide ou le dossier d'installation DeepSeek Harness enregistré.",
++    "INSTALLER_PATH_OWNERSHIP": "Choisissez un dossier vide ou le dossier d'installation !!APP_NAME!! enregistré.",
+     "INSTALLER_PATH_WRITABLE": "Cet emplacement n'est pas accessible en écriture. Choisissez un dossier disponible pour l'utilisateur actuel.",
+     "INSTALLER_DISK_SPACE": "Il n'y a pas assez d'espace disque libre. Choisissez un autre emplacement.",
+     "INSTALLER_PER_USER": "Ce programme d'installation prend en charge uniquement l'utilisateur actuel. Désinstallez d’abord l’installation existante pour tous les utilisateurs.",
+diff --git a/apps/desktop/installer/locales/ja_JP.json b/apps/desktop/installer/locales/ja_JP.json
+index ee614789..737a0e27 100644
+--- a/apps/desktop/installer/locales/ja_JP.json
++++ b/apps/desktop/installer/locales/ja_JP.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "インストール先を選択",
+     "INSTALLER_BROWSE": "参照",
+     "INSTALLER_LAUNCH": "今すぐ起動",
+-    "INSTALLER_LAUNCH_FAILED": "DeepSeek Harness を起動できませんでした。再試行するか、「今すぐ起動」のチェックを外してインストーラーを閉じてください。",
++    "INSTALLER_LAUNCH_FAILED": "!!APP_NAME!! を起動できませんでした。再試行するか、「今すぐ起動」のチェックを外してインストーラーを閉じてください。",
+     "INSTALLER_UI_ERROR": "インストーラーのウィンドウを初期化できませんでした。閉じてから再試行してください。",
+     "INSTALLER_THEME_ERROR": "/THEME=auto、/THEME=light、/THEME=dark のいずれかを指定してください。",
+     "INSTALLER_FAILED": "インストールが完了しませんでした。インストーラーを閉じて再試行してください。問題が解決しない場合は、インストーラーを再度ダウンロードしてください。",
+-    "INSTALLER_RUNNING": "DeepSeek Harness が実行中です。システムトレイから終了して再試行してください。",
++    "INSTALLER_RUNNING": "!!APP_NAME!! が実行中です。システムトレイから終了して再試行してください。",
+     "INSTALLER_DIRECTORY_FAILED": "インストール先のディレクトリを置き換えられませんでした。",
+     "INSTALLER_DIRECTORY_HINT": "インストール先へのアクセス権限を確認し、そのファイルを使用しているプログラムを閉じてから、インストーラーを再実行してください。問題が続く場合はエラーの詳細をコピーしてください。",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "以前のインストールを復元できませんでした。エラーの詳細に表示されたバックアップディレクトリを保持し、再インストール前にサポートへお問い合わせください。",
+     "INSTALLER_PATH_INVALID": "ローカルフォルダーの完全なパスを選択してください。ドライブのルート、システムフォルダー、リンク、特殊文字を含むパスは使用できません。",
+-    "INSTALLER_PATH_OWNERSHIP": "空のフォルダー、または登録済みの DeepSeek Harness インストール先を選択してください。",
++    "INSTALLER_PATH_OWNERSHIP": "空のフォルダー、または登録済みの !!APP_NAME!! インストール先を選択してください。",
+     "INSTALLER_PATH_WRITABLE": "この場所には書き込めません。現在のユーザーが書き込めるフォルダーを選択してください。インストーラーは管理者権限を要求しません。",
+     "INSTALLER_DISK_SPACE": "ディスクの空き容量が不足しています。別の場所を選択してください。",
+     "INSTALLER_PER_USER": "このインストーラーは現在のユーザーのみを対象としています。先にすべてのユーザー向けの既存のインストールを削除してください。",
+diff --git a/apps/desktop/installer/locales/pt_BR.json b/apps/desktop/installer/locales/pt_BR.json
+index dda249e4..82dadb7f 100644
+--- a/apps/desktop/installer/locales/pt_BR.json
++++ b/apps/desktop/installer/locales/pt_BR.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "Escolha o local",
+     "INSTALLER_BROWSE": "Procurar",
+     "INSTALLER_LAUNCH": "Lançar agora",
+-    "INSTALLER_LAUNCH_FAILED": "DeepSeek Harness não pôde ser iniciado. Tente novamente ou desmarque Iniciar agora e feche o instalador.",
++    "INSTALLER_LAUNCH_FAILED": "!!APP_NAME!! não pôde ser iniciado. Tente novamente ou desmarque Iniciar agora e feche o instalador.",
+     "INSTALLER_UI_ERROR": "O instalador não conseguiu inicializar sua janela. Feche-o e tente novamente.",
+     "INSTALLER_THEME_ERROR": "Use /THEME=auto, /THEME=light ou /THEME=dark.",
+     "INSTALLER_FAILED": "A instalação não foi concluída. Feche este instalador e tente novamente. Se o problema persistir, baixe o instalador novamente.",
+-    "INSTALLER_RUNNING": "DeepSeek Harness está em execução. Saia da bandeja do sistema e tente novamente.",
++    "INSTALLER_RUNNING": "!!APP_NAME!! está em execução. Saia da bandeja do sistema e tente novamente.",
+     "INSTALLER_DIRECTORY_FAILED": "O diretório de instalação não pôde ser substituído.",
+     "INSTALLER_DIRECTORY_HINT": "Verifique o acesso ao diretório de instalação e feche os programas usando seus arquivos e execute o instalador novamente. Copie os detalhes do erro se o problema persistir.",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "A instalação anterior não pôde ser restaurada. Mantenha o diretório de backup mostrado nos detalhes do erro e entre em contato com o suporte antes de instalar novamente.",
+     "INSTALLER_PATH_INVALID": "Escolha um caminho completo para a pasta local. Raízes de unidade, pastas de sistema, links e caracteres especiais não são suportados.",
+-    "INSTALLER_PATH_OWNERSHIP": "Escolha uma pasta vazia ou a pasta de instalação DeepSeek Harness registrada.",
++    "INSTALLER_PATH_OWNERSHIP": "Escolha uma pasta vazia ou a pasta de instalação !!APP_NAME!! registrada.",
+     "INSTALLER_PATH_WRITABLE": "Este local não é gravável. Escolha uma pasta disponível para o usuário atual.",
+     "INSTALLER_DISK_SPACE": "Não há espaço livre suficiente em disco. Escolha outro local.",
+     "INSTALLER_PER_USER": "Este instalador oferece suporte apenas ao usuário atual. Desinstale primeiro a instalação existente para todos os usuários.",
+diff --git a/apps/desktop/installer/locales/ru_RU.json b/apps/desktop/installer/locales/ru_RU.json
+index e5fec3f8..a267b8e7 100644
+--- a/apps/desktop/installer/locales/ru_RU.json
++++ b/apps/desktop/installer/locales/ru_RU.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "Выберите местоположение",
+     "INSTALLER_BROWSE": "Обзор",
+     "INSTALLER_LAUNCH": "Запустить сейчас",
+-    "INSTALLER_LAUNCH_FAILED": "DeepSeek Harness не удалось запустить. Повторите попытку или снимите флажок «Запустить сейчас» и закройте программу установки.",
++    "INSTALLER_LAUNCH_FAILED": "!!APP_NAME!! не удалось запустить. Повторите попытку или снимите флажок «Запустить сейчас» и закройте программу установки.",
+     "INSTALLER_UI_ERROR": "Установщику не удалось инициализировать свое окно. Закройте его и попробуйте еще раз.",
+     "INSTALLER_THEME_ERROR": "Используйте /THEME=auto, /THEME=light или /THEME=dark.",
+     "INSTALLER_FAILED": "Установка не завершена. Закройте этот установщик и повторите попытку. Если проблема не устранена, загрузите установщик еще раз.",
+-    "INSTALLER_RUNNING": "DeepSeek Harness работает. Закройте его из системного трея и повторите попытку.",
++    "INSTALLER_RUNNING": "!!APP_NAME!! работает. Закройте его из системного трея и повторите попытку.",
+     "INSTALLER_DIRECTORY_FAILED": "Не удалось заменить каталог установки.",
+     "INSTALLER_DIRECTORY_HINT": "Проверьте доступ к каталогу установки и закройте программы, использующие его файлы, затем снова запустите установщик. Скопируйте сведения об ошибке, если проблема не устранена.",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "Предыдущую установку восстановить не удалось. Сохраните каталог резервной копии, указанный в сведениях об ошибке, и обратитесь в службу поддержки перед повторной установкой.",
+     "INSTALLER_PATH_INVALID": "Выберите полный путь к локальной папке. Корни дисков, системные папки, ссылки и специальные символы не поддерживаются.",
+-    "INSTALLER_PATH_OWNERSHIP": "Выберите пустую папку или зарегистрированную папку установки DeepSeek Harness.",
++    "INSTALLER_PATH_OWNERSHIP": "Выберите пустую папку или зарегистрированную папку установки !!APP_NAME!!.",
+     "INSTALLER_PATH_WRITABLE": "Это местоположение недоступно для записи. Выберите папку, доступную текущему пользователю.",
+     "INSTALLER_DISK_SPACE": "Недостаточно свободного места на диске. Выберите другое место.",
+     "INSTALLER_PER_USER": "Этот установщик поддерживает только текущего пользователя. Сначала удалите существующую установку для всех пользователей.",
+diff --git a/apps/desktop/installer/locales/zh_CN.json b/apps/desktop/installer/locales/zh_CN.json
+index e3f40f13..ea6d30be 100644
+--- a/apps/desktop/installer/locales/zh_CN.json
++++ b/apps/desktop/installer/locales/zh_CN.json
+@@ -11,16 +11,16 @@
+     "INSTALLER_CHOOSE_PATH": "选择安装位置",
+     "INSTALLER_BROWSE": "选择",
+     "INSTALLER_LAUNCH": "立即启动",
+-    "INSTALLER_LAUNCH_FAILED": "无法启动 DeepSeek Harness。请重试，或取消勾选立即启动后关闭安装程序。",
++    "INSTALLER_LAUNCH_FAILED": "无法启动 !!APP_NAME!!。请重试，或取消勾选立即启动后关闭安装程序。",
+     "INSTALLER_UI_ERROR": "无法初始化安装窗口，请关闭后重试。",
+     "INSTALLER_THEME_ERROR": "主题参数须为 /THEME=auto、/THEME=light 或 /THEME=dark。",
+     "INSTALLER_FAILED": "安装未完成，请关闭安装程序后重试。如仍然失败，请重新下载安装包。",
+-    "INSTALLER_RUNNING": "DeepSeek Harness 正在运行，请先在系统托盘中退出应用后重试。",
++    "INSTALLER_RUNNING": "!!APP_NAME!! 正在运行，请先在系统托盘中退出应用后重试。",
+     "INSTALLER_DIRECTORY_FAILED": "无法替换安装目录。",
+     "INSTALLER_DIRECTORY_HINT": "请检查安装目录的访问权限，关闭占用其中内容的程序后重新运行安装器。如仍失败，请复制错误详情。",
+     "INSTALLER_DIRECTORY_RESTORE_HINT": "未能恢复原安装目录。请保留错误详情中列出的备份目录，联系支持人员后再安装。",
+     "INSTALLER_PATH_INVALID": "请选择本地磁盘上的完整文件夹路径，不能使用磁盘根目录、系统目录、链接目录或包含特殊字符的路径。",
+-    "INSTALLER_PATH_OWNERSHIP": "请选择空文件夹，或 DeepSeek Harness 原来的安装目录。",
++    "INSTALLER_PATH_OWNERSHIP": "请选择空文件夹，或 !!APP_NAME!! 原来的安装目录。",
+     "INSTALLER_PATH_WRITABLE": "无法写入此位置。请选择当前用户可写入的文件夹；安装程序不会申请管理员权限。",
+     "INSTALLER_DISK_SPACE": "此磁盘的可用空间不足，请选择其他位置。",
+     "INSTALLER_PER_USER": "此安装程序仅支持当前用户。请先卸载已有的所有用户安装版本。",
+diff --git a/apps/desktop/scripts/desktop-build-version-discovery.ts b/apps/desktop/scripts/desktop-build-version-discovery.ts
+index 68291ca3..b84c6aab 100644
+--- a/apps/desktop/scripts/desktop-build-version-discovery.ts
++++ b/apps/desktop/scripts/desktop-build-version-discovery.ts
+@@ -31,7 +31,7 @@ const LISTING_DEADLINE_MS = 8_000
+ const LISTING_PAGE_SIZE = 1000
+ 
+ /** Artifact name electron-builder writes for one build, on either platform; unsigned and unnotarized builds add a suffix. */
+-const ARTIFACT = /(?:^|\/)deepseek-harness-(?<version>.+)-(?:mac|win)-(?:arm64|x64)(?:-unsigned|-unnotarized)?\.(?:exe|dmg|zip)$/u
++const ARTIFACT = /(?:^|\/)!!PACKAGE_NAME!!-(?<version>.+)-(?:mac|win)-(?:arm64|x64)(?:-unsigned|-unnotarized)?\.(?:exe|dmg|zip)$/u
+ 
+ /** Inputs that decide which versions are already taken. */
+ export interface DesktopBuildVersionSuggestionOptions {
+diff --git a/apps/desktop/scripts/electron-builder-config.mjs b/apps/desktop/scripts/electron-builder-config.mjs
+index ba1fd9e1..f50c94ae 100644
+--- a/apps/desktop/scripts/electron-builder-config.mjs
++++ b/apps/desktop/scripts/electron-builder-config.mjs
+@@ -110,19 +110,23 @@ export function createElectronBuilderConfig(
+   const packaged = resolveDesktopBuildCommit(env)
+   return {
+     appId,
+-    protocols: [{ name: 'DeepSeek Harness', schemes: ['dsh'] }],
++    protocols: [{ name: '!!APP_NAME!!', schemes: ['dsh'] }],
+     extraMetadata: {
++      // A distinct package name and product name give this build its own userData folder, single-instance lock and updater cache.
++      name: '!!PACKAGE_NAME!!',
++      productName: '!!APP_NAME!!',
++      author: { name: '!!APP_NAME!! contributors' },
+       dshDesktopAppId: appId,
+       dshDesktopUpdateChannel: update?.channel ?? 'nightly',
+       ...(policy === undefined ? {} : { dshMandatoryUpdatePolicy: policy }),
+       ...buildVersion === productVersion ? {} : { version: buildVersion },
+       ...packaged === undefined ? {} : { dshBuildCommit: packaged.commit, dshBuildDirty: packaged.dirty },
+     },
+-    productName: 'DeepSeek Harness',
++    productName: '!!APP_NAME!!',
+     // The default copyright uses author.name; this line names the product instead.
+     copyright: `Copyright © ${new Date().getFullYear()} \${productName}`,
+     // Unsigned builds carry their own suffix so a shared file can never pass for a release artifact.
+-    artifactName: `deepseek-harness-\${version}-\${os}-\${arch}${output.suffix}.\${ext}`,
++    artifactName: `!!PACKAGE_NAME!!-\${version}-\${os}-\${arch}${output.suffix}.\${ext}`,
+     directories: { output: output.directory },
+     asar: true,
+     electronDist: buildPaths.electron,
+diff --git a/apps/desktop/scripts/package-target.ts b/apps/desktop/scripts/package-target.ts
+index b6bc6efb..48c78f46 100644
+--- a/apps/desktop/scripts/package-target.ts
++++ b/apps/desktop/scripts/package-target.ts
+@@ -545,13 +545,13 @@ export async function packageTarget(
+   } else if (target.platform === 'darwin' && !invocation.unsigned && !invocation.skipNotarization) {
+     await execute([...desktopElectronBuilderArguments(target, true), '--config.mac.notarize=false'], electronBuilderEnv)
+     await execute(['exec', 'tsx', 'scripts/smoke-packaged-runtime.ts'], targetEnv)
+-    const appPath = join(buildPaths.artifacts, target.arch === 'arm64' ? 'mac-arm64' : 'mac', 'DeepSeek Harness.app')
++    const appPath = join(buildPaths.artifacts, target.arch === 'arm64' ? 'mac-arm64' : 'mac', '!!APP_NAME!!.app')
+     await withMacOSNotarizationProxy(mac?.notarizationProxy,
+       () => notarizeMacOS({ appPath, ...resolveMacOSNotarizationEnvironment(environment) }), undefined, undefined, proxyEvent)
+   } else {
+     if (target.platform === 'darwin' && invocation.skipNotarization && !invocation.directory) {
+       await execute(desktopElectronBuilderArguments(target, true), electronBuilderEnv)
+-      const appPath = join(artifactsRoot, target.arch === 'arm64' ? 'mac-arm64' : 'mac', 'DeepSeek Harness.app')
++      const appPath = join(artifactsRoot, target.arch === 'arm64' ? 'mac-arm64' : 'mac', '!!APP_NAME!!.app')
+       for (const format of ['dmg', 'zip'] as const) {
+         await buildMacArtifact({ format, appPath, output: artifactsRoot })
+       }
+diff --git a/apps/desktop/scripts/smoke-packaged-runtime.ts b/apps/desktop/scripts/smoke-packaged-runtime.ts
+index 6c3c12c8..0b07c5c0 100644
+--- a/apps/desktop/scripts/smoke-packaged-runtime.ts
++++ b/apps/desktop/scripts/smoke-packaged-runtime.ts
+@@ -13,9 +13,9 @@ const target = resolveDesktopBuildTarget()
+ const windows = target === 'win-x64'
+ const artifacts = desktopArtifactOutput(paths, { unsigned: values.unsigned, skipNotarization: values['skip-notarization'] }).directory
+ const application = windows ? join(artifacts, 'win-unpacked')
+-  : join(artifacts, target === 'mac-arm64' ? 'mac-arm64' : 'mac', 'DeepSeek Harness.app', 'Contents')
++  : join(artifacts, target === 'mac-arm64' ? 'mac-arm64' : 'mac', '!!APP_NAME!!.app', 'Contents')
+ const resources = join(application, windows ? 'resources' : 'Resources')
+-const executable = windows ? join(application, 'DeepSeek Harness.exe') : join(application, 'MacOS', 'DeepSeek Harness')
++const executable = windows ? join(application, '!!APP_NAME!!.exe') : join(application, 'MacOS', '!!APP_NAME!!')
+ const descriptor = await verifyDesktopRuntime(paths.dsh, readDesktopRuntime(paths.dsh).release.version,
+   resolveDesktopPackageTarget(target))
+ if (windows && !values.unsigned) await verifyWindowsCode(application)
+diff --git a/apps/desktop/src/locale.ts b/apps/desktop/src/locale.ts
+index 9e7072f4..05885f08 100644
+--- a/apps/desktop/src/locale.ts
++++ b/apps/desktop/src/locale.ts
+@@ -31,19 +31,19 @@ export const en = {
+   application: 'Application',
+   fileMenu: 'File',
+   closePage: 'Close Page or Window',
+-  aboutMenu: 'About DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: 'About !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'Version V{version}',
+-  hideApplication: 'Hide DeepSeek Harness',
++  hideApplication: 'Hide !!APP_NAME!!',
+   hideOtherApplications: 'Hide Others',
+   showAllApplications: 'Show All',
+   substitutionsMenu: 'Substitutions',
+   speechMenu: 'Speech',
+-  quitApplication: 'Quit DeepSeek Harness',
+-  openApplication: 'Open DeepSeek Harness',
++  quitApplication: 'Quit !!APP_NAME!!',
++  openApplication: 'Open !!APP_NAME!!',
+   quit: 'Quit',
+   cancel: 'Cancel',
+-  quitTitle: 'Quit DeepSeek Harness?',
++  quitTitle: 'Quit !!APP_NAME!!?',
+   quitActiveTasks: 'Running tasks will be interrupted.',
+   quitScheduledTasks: 'Scheduled tasks will not run while the app is closed.',
+   quitActiveAndScheduledTasks: 'Running tasks will be interrupted, and scheduled tasks will not run while the app is closed.',
+@@ -58,7 +58,7 @@ export const en = {
+   copy: 'Copy',
+   paste: 'Paste',
+   selectAll: 'Select All',
+-  startupFailed: 'DeepSeek Harness is unavailable',
++  startupFailed: '!!APP_NAME!! is unavailable',
+   fatalSummary: 'The application could not start or stopped unexpectedly.',
+   startupAddressInUse: 'Another DSH instance (such as dsh web or the desktop app) is running. They cannot start at the same time. Quit the other running DSH instance, then restart.',
+   diagnosticTruncated: '… Error details shortened.',
+@@ -73,10 +73,10 @@ export const en = {
+   restartApplication: 'Restart',
+   recoveryOperationFailed: 'The recovery operation failed',
+   disableThirdPartyPlugins: 'Disable third-party plugins, back up profile patch, and restart',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'Welcome to ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: 'Build potential. Explore intelligence.',
+   welcomeAuthStarting: 'Opening sign in…',
+@@ -150,7 +150,7 @@ export const en = {
+   updateFullscreenTimeout: 'Could not exit fullscreen. Exit fullscreen, then retry the update.',
+   updateStopFailed: 'Could not safely stop the tasks. The update has not been installed. Please try again later.',
+   updateTechnicalDetails: 'View technical details',
+-  updateTitle: 'DeepSeek Harness Update',
++  updateTitle: '!!APP_NAME!! Update',
+   updateAvailable: 'New version available: {version}',
+   updateDetail: 'Once the download is complete, you can install the update and restart the app.',
+   installAndRestart: 'Install and Restart',
+@@ -224,19 +224,19 @@ export const zh = {
+   application: '应用',
+   fileMenu: '文件',
+   closePage: '关闭页面或窗口',
+-  aboutMenu: '关于 DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: '关于 !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: '版本 V{version}',
+-  hideApplication: '隐藏 DeepSeek Harness',
++  hideApplication: '隐藏 !!APP_NAME!!',
+   hideOtherApplications: '隐藏其他',
+   showAllApplications: '显示全部',
+   substitutionsMenu: '替换',
+   speechMenu: '语音',
+-  quitApplication: '退出 DeepSeek Harness',
+-  openApplication: '打开 DeepSeek Harness',
++  quitApplication: '退出 !!APP_NAME!!',
++  openApplication: '打开 !!APP_NAME!!',
+   quit: '退出',
+   cancel: '取消',
+-  quitTitle: '退出 DeepSeek Harness？',
++  quitTitle: '退出 !!APP_NAME!!？',
+   quitActiveTasks: '当前正在运行的任务将会中断',
+   quitScheduledTasks: '应用关闭期间，定时任务不会运行',
+   quitActiveAndScheduledTasks: '当前正在运行的任务将会中断，且应用关闭期间，定时任务不会运行',
+@@ -251,7 +251,7 @@ export const zh = {
+   copy: '复制',
+   paste: '粘贴',
+   selectAll: '全选',
+-  startupFailed: 'DeepSeek Harness 无法使用',
++  startupFailed: '!!APP_NAME!! 无法使用',
+   fatalSummary: '应用无法启动或已意外停止。',
+   startupAddressInUse: '有其他正在运行的 DSH（如其他 dsh web、桌面端），无法同时启动，请退出其他正在运行的 DSH 后重启。',
+   diagnosticTruncated: '… 错误详情已截短。',
+@@ -266,10 +266,10 @@ export const zh = {
+   restartApplication: '重启',
+   recoveryOperationFailed: '恢复操作失败',
+   disableThirdPartyPlugins: '禁用第三方插件、备份 profile patch 并重启',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: '欢迎使用 ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: '组装无限可能，共探智能上限',
+   welcomeAuthStarting: '正在打开登录…',
+@@ -343,7 +343,7 @@ export const zh = {
+   updateFullscreenTimeout: '无法退出全屏，请退出全屏后重试更新',
+   updateStopFailed: '未能安全停止任务，更新尚未安装，请稍后重试。',
+   updateTechnicalDetails: '查看技术详情',
+-  updateTitle: 'DeepSeek Harness 更新',
++  updateTitle: '!!APP_NAME!! 更新',
+   updateAvailable: '发现新版本 {version}',
+   updateDetail: '下载完成后，可安装并重启应用。',
+   installAndRestart: '安装并重启',
+@@ -415,19 +415,19 @@ export const ja = {
+   application: 'アプリケーション',
+   fileMenu: 'ファイル',
+   closePage: 'ページまたはウィンドウを閉じる',
+-  aboutMenu: 'DeepSeek Harness について',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: '!!APP_NAME!! について',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'バージョン V{version}',
+-  hideApplication: 'DeepSeek Harness を隠す',
++  hideApplication: '!!APP_NAME!! を隠す',
+   hideOtherApplications: 'ほかを隠す',
+   showAllApplications: 'すべて表示',
+   substitutionsMenu: '自動置換',
+   speechMenu: 'スピーチ',
+-  quitApplication: 'DeepSeek Harness を終了',
+-  openApplication: 'DeepSeek Harness を開く',
++  quitApplication: '!!APP_NAME!! を終了',
++  openApplication: '!!APP_NAME!! を開く',
+   quit: '終了',
+   cancel: 'キャンセル',
+-  quitTitle: 'DeepSeek Harness を終了しますか？',
++  quitTitle: '!!APP_NAME!! を終了しますか？',
+   quitActiveTasks: '実行中のタスクは中断されます。',
+   quitScheduledTasks: 'アプリの終了中はスケジュールされたタスクが実行されません。',
+   quitActiveAndScheduledTasks: '実行中のタスクは中断され、アプリの終了中はスケジュールされたタスクが実行されません。',
+@@ -442,7 +442,7 @@ export const ja = {
+   copy: 'コピー',
+   paste: '貼り付け',
+   selectAll: 'すべて選択',
+-  startupFailed: 'DeepSeek Harness を利用できません',
++  startupFailed: '!!APP_NAME!! を利用できません',
+   fatalSummary: 'アプリケーションを起動できなかったか、予期せず停止しました。',
+   startupAddressInUse: '別の DSH インスタンス (dsh web やデスクトップアプリなど) が実行中です。同時に起動することはできません。実行中の他の DSH インスタンスを終了してから再起動してください。',
+   diagnosticTruncated: '… エラー詳細は省略されています。',
+@@ -457,10 +457,10 @@ export const ja = {
+   restartApplication: '再起動',
+   recoveryOperationFailed: '復旧操作に失敗しました',
+   disableThirdPartyPlugins: 'サードパーティのプラグインを無効化し、プロファイルパッチをバックアップして再起動',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'ようこそ ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: '可能性を築く。知能を探求する。',
+   welcomeAuthStarting: 'ログインを開いています…',
+@@ -534,7 +534,7 @@ export const ja = {
+   updateFullscreenTimeout: 'フルスクリーンを終了できませんでした。フルスクリーンを終了してからアップデートを再試行してください。',
+   updateStopFailed: 'タスクを安全に停止できませんでした。アップデートはインストールされていません。後でもう一度お試しください。',
+   updateTechnicalDetails: '技術的な詳細を表示',
+-  updateTitle: 'DeepSeek Harness アップデート',
++  updateTitle: '!!APP_NAME!! アップデート',
+   updateAvailable: '新しいバージョンがあります: {version}',
+   updateDetail: 'ダウンロードが完了したら、アップデートをインストールしてアプリを再起動できます。',
+   installAndRestart: 'インストールして再起動',
+@@ -606,19 +606,19 @@ export const es = {
+   application: 'Solicitud',
+   fileMenu: 'Archivo',
+   closePage: 'Cerrar página o ventana',
+-  aboutMenu: 'Acerca de DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: 'Acerca de !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'Versión V{version}',
+-  hideApplication: 'Ocultar DeepSeek Harness',
++  hideApplication: 'Ocultar !!APP_NAME!!',
+   hideOtherApplications: 'Ocultar otros',
+   showAllApplications: 'Mostrar todo',
+   substitutionsMenu: 'Sustituciones',
+   speechMenu: 'Voz',
+-  quitApplication: 'Salir de DeepSeek Harness',
+-  openApplication: 'Abrir DeepSeek Harness',
++  quitApplication: 'Salir de !!APP_NAME!!',
++  openApplication: 'Abrir !!APP_NAME!!',
+   quit: 'Salir',
+   cancel: 'Cancelar',
+-  quitTitle: '¿Salir de DeepSeek Harness?',
++  quitTitle: '¿Salir de !!APP_NAME!!?',
+   quitActiveTasks: 'Las tareas en ejecución se interrumpirán.',
+   quitScheduledTasks: 'Las tareas programadas no se ejecutarán mientras la aplicación esté cerrada.',
+   quitActiveAndScheduledTasks: 'Las tareas en ejecución se interrumpirán y las tareas programadas no se ejecutarán mientras la aplicación esté cerrada.',
+@@ -633,7 +633,7 @@ export const es = {
+   copy: 'Copiar',
+   paste: 'Pegar',
+   selectAll: 'Seleccionar todo',
+-  startupFailed: 'DeepSeek Harness no está disponible',
++  startupFailed: '!!APP_NAME!! no está disponible',
+   fatalSummary: 'La aplicación no pudo iniciarse o se detuvo inesperadamente.',
+   startupAddressInUse: 'Se está ejecutando otra instancia de DSH (como la web de dsh o la aplicación de escritorio). No pueden empezar al mismo tiempo. Salga de la otra instancia DSH en ejecución y luego reinicie.',
+   diagnosticTruncated: '… Detalles del error acortados.',
+@@ -648,10 +648,10 @@ export const es = {
+   restartApplication: 'Reiniciar',
+   recoveryOperationFailed: 'La operación de recuperación falló',
+   disableThirdPartyPlugins: 'Deshabilite los complementos de terceros, haga una copia de seguridad del parche del perfil y reinicie',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'Bienvenido a ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: 'Desarrollar potencial. Explora la inteligencia.',
+   welcomeAuthStarting: 'Abriendo inicio de sesión…',
+@@ -725,7 +725,7 @@ export const es = {
+   updateFullscreenTimeout: 'No se pudo salir de la pantalla completa. Salga de la pantalla completa y luego vuelva a intentar la actualización.',
+   updateStopFailed: 'No se pudieron detener las tareas de forma segura. La actualización no se ha instalado. Inténtelo de nuevo más tarde.',
+   updateTechnicalDetails: 'Ver detalles técnicos',
+-  updateTitle: 'Actualización DeepSeek Harness',
++  updateTitle: 'Actualización !!APP_NAME!!',
+   updateAvailable: 'Nueva versión disponible: {version}',
+   updateDetail: 'Una vez que se completa la descarga, puede instalar la actualización y reiniciar la aplicación.',
+   installAndRestart: 'Instalar y reiniciar',
+@@ -797,19 +797,19 @@ export const fr = {
+   application: 'Application',
+   fileMenu: 'Fichier',
+   closePage: 'Fermer la page ou la fenêtre',
+-  aboutMenu: 'À propos de DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: 'À propos de !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'VersionV{version}',
+-  hideApplication: 'Masquer DeepSeek Harness',
++  hideApplication: 'Masquer !!APP_NAME!!',
+   hideOtherApplications: 'Masquer les autres',
+   showAllApplications: 'Afficher tout',
+   substitutionsMenu: 'Substitutions',
+   speechMenu: 'Parole',
+-  quitApplication: 'Quitter DeepSeek Harness',
+-  openApplication: 'Ouvrir DeepSeek Harness',
++  quitApplication: 'Quitter !!APP_NAME!!',
++  openApplication: 'Ouvrir !!APP_NAME!!',
+   quit: 'Quitter',
+   cancel: 'Annuler',
+-  quitTitle: 'Quitter DeepSeek Harness ?',
++  quitTitle: 'Quitter !!APP_NAME!! ?',
+   quitActiveTasks: 'Les tâches en cours seront interrompues.',
+   quitScheduledTasks: "Les tâches planifiées ne s'exécuteront pas lorsque l'application est fermée.",
+   quitActiveAndScheduledTasks: "Les tâches en cours d'exécution seront interrompues et les tâches planifiées ne s'exécuteront pas tant que l'application sera fermée.",
+@@ -824,7 +824,7 @@ export const fr = {
+   copy: 'Copier',
+   paste: 'Coller',
+   selectAll: 'Sélectionner tout',
+-  startupFailed: "DeepSeek Harness n'est pas disponible",
++  startupFailed: "!!APP_NAME!! n'est pas disponible",
+   fatalSummary: "L'application n'a pas pu démarrer ou s'est arrêtée de manière inattendue.",
+   startupAddressInUse: "Une autre instance DSH (telle que le Web dsh ou l'application de bureau) est en cours d'exécution. Ils ne peuvent pas démarrer en même temps. Quittez l'autre instance DSH en cours d'exécution, puis redémarrez.",
+   diagnosticTruncated: '… Détails de l’erreur raccourcis.',
+@@ -839,10 +839,10 @@ export const fr = {
+   restartApplication: 'Redémarrer',
+   recoveryOperationFailed: "L'opération de récupération a échoué",
+   disableThirdPartyPlugins: 'Désactivez les plugins tiers, sauvegardez le correctif de profil et redémarrez',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'Bienvenue à ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: "Développer le potentiel. Explorez l'intelligence.",
+   welcomeAuthStarting: 'Ouverture de la connexion…',
+@@ -916,7 +916,7 @@ export const fr = {
+   updateFullscreenTimeout: 'Impossible de quitter le mode plein écran. Quittez le mode plein écran, puis réessayez la mise à jour.',
+   updateStopFailed: "Impossible d'arrêter les tâches en toute sécurité. La mise à jour n'a pas été installée. Veuillez réessayer plus tard.",
+   updateTechnicalDetails: 'Voir les détails techniques',
+-  updateTitle: 'Mise à jour DeepSeek Harness',
++  updateTitle: 'Mise à jour !!APP_NAME!!',
+   updateAvailable: 'Nouvelle version disponible : {version}',
+   updateDetail: "Une fois le téléchargement terminé, vous pouvez installer la mise à jour et redémarrer l'application.",
+   installAndRestart: 'Installer et redémarrer',
+@@ -988,19 +988,19 @@ export const de = {
+   application: 'Anwendung',
+   fileMenu: 'Datei',
+   closePage: 'Seite oder Fenster schließen',
+-  aboutMenu: 'Über DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: 'Über !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'Version V{version}',
+-  hideApplication: 'DeepSeek Harness ausblenden',
++  hideApplication: '!!APP_NAME!! ausblenden',
+   hideOtherApplications: 'Andere ausblenden',
+   showAllApplications: 'Alle einblenden',
+   substitutionsMenu: 'Ersetzungen',
+   speechMenu: 'Sprachausgabe',
+-  quitApplication: 'DeepSeek Harness beenden',
+-  openApplication: 'DeepSeek Harness öffnen',
++  quitApplication: '!!APP_NAME!! beenden',
++  openApplication: '!!APP_NAME!! öffnen',
+   quit: 'Beenden',
+   cancel: 'Abbrechen',
+-  quitTitle: 'DeepSeek Harness beenden?',
++  quitTitle: '!!APP_NAME!! beenden?',
+   quitActiveTasks: 'Laufende Aufgaben werden unterbrochen.',
+   quitScheduledTasks: 'Geplante Aufgaben werden nicht ausgeführt, während die App geschlossen ist.',
+   quitActiveAndScheduledTasks: 'Laufende Aufgaben werden unterbrochen und geplante Aufgaben werden nicht ausgeführt, während die App geschlossen ist.',
+@@ -1015,7 +1015,7 @@ export const de = {
+   copy: 'Kopieren',
+   paste: 'Einfügen',
+   selectAll: 'Alles auswählen',
+-  startupFailed: 'DeepSeek Harness ist nicht verfügbar',
++  startupFailed: '!!APP_NAME!! ist nicht verfügbar',
+   fatalSummary: 'Die Anwendung konnte nicht gestartet werden oder wurde unerwartet gestoppt.',
+   startupAddressInUse: 'Eine andere DSH-Instanz (z. B. dsh Web oder die Desktop-App) wird ausgeführt. Sie können nicht gleichzeitig starten. Beenden Sie die andere laufende DSH-Instanz und starten Sie sie neu.',
+   diagnosticTruncated: '… Fehlerdetails gekürzt.',
+@@ -1030,10 +1030,10 @@ export const de = {
+   restartApplication: 'Neustart',
+   recoveryOperationFailed: 'Der Wiederherstellungsvorgang ist fehlgeschlagen',
+   disableThirdPartyPlugins: 'Deaktivieren Sie Plugins von Drittanbietern, sichern Sie den Profil-Patch und starten Sie neu',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'Willkommen bei ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: 'Potenzial aufbauen. Entdecken Sie Intelligenz.',
+   welcomeAuthStarting: 'Anmeldung wird geöffnet…',
+@@ -1107,7 +1107,7 @@ export const de = {
+   updateFullscreenTimeout: 'Der Vollbildmodus konnte nicht beendet werden. Beenden Sie den Vollbildmodus und versuchen Sie dann erneut, das Update durchzuführen.',
+   updateStopFailed: 'Die Aufgaben konnten nicht sicher gestoppt werden. Das Update wurde nicht installiert. Bitte versuchen Sie es später noch einmal.',
+   updateTechnicalDetails: 'Technische Details anzeigen',
+-  updateTitle: 'DeepSeek Harness-Update',
++  updateTitle: '!!APP_NAME!!-Update',
+   updateAvailable: 'Neue Version verfügbar: {version}',
+   updateDetail: 'Sobald der Download abgeschlossen ist, können Sie das Update installieren und die App neu starten.',
+   installAndRestart: 'Installieren und neu starten',
+@@ -1179,19 +1179,19 @@ export const ru = {
+   application: 'Приложение',
+   fileMenu: 'Файл',
+   closePage: 'Закрыть страницу или окно',
+-  aboutMenu: 'О DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: 'О !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'Версия V{version}',
+-  hideApplication: 'Скрыть DeepSeek Harness',
++  hideApplication: 'Скрыть !!APP_NAME!!',
+   hideOtherApplications: 'Скрыть других',
+   showAllApplications: 'Показать все',
+   substitutionsMenu: 'Замены',
+   speechMenu: 'Речь',
+-  quitApplication: 'Выйти из DeepSeek Harness',
+-  openApplication: 'Открыть DeepSeek Harness',
++  quitApplication: 'Выйти из !!APP_NAME!!',
++  openApplication: 'Открыть !!APP_NAME!!',
+   quit: 'Выйти',
+   cancel: 'Отмена',
+-  quitTitle: 'Выйти из DeepSeek Harness?',
++  quitTitle: 'Выйти из !!APP_NAME!!?',
+   quitActiveTasks: 'Выполнение задач будет прервано.',
+   quitScheduledTasks: 'Запланированные задачи не будут выполняться, пока приложение закрыто.',
+   quitActiveAndScheduledTasks: 'Выполнение задач будет прервано, а запланированные задачи не будут выполняться, пока приложение закрыто.',
+@@ -1206,7 +1206,7 @@ export const ru = {
+   copy: 'Копировать',
+   paste: 'Вставить',
+   selectAll: 'Выбрать все',
+-  startupFailed: 'DeepSeek Harness недоступен.',
++  startupFailed: '!!APP_NAME!! недоступен.',
+   fatalSummary: 'Приложение не могло запуститься или неожиданно остановилось.',
+   startupAddressInUse: 'Другой экземпляр DSH (например, веб-приложение dsh или настольное приложение) запущен. Они не могут начаться одновременно. Закройте другой работающий экземпляр DSH, а затем перезапустите.',
+   diagnosticTruncated: '… Подробности об ошибках сокращены.',
+@@ -1221,10 +1221,10 @@ export const ru = {
+   restartApplication: 'Перезапустить',
+   recoveryOperationFailed: 'Операция восстановления не удалась',
+   disableThirdPartyPlugins: 'Отключите сторонние плагины, создайте резервную копию патча профиля и перезапустите.',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'Добро пожаловать в ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: 'Развивайте потенциал. Исследуйте интеллект.',
+   welcomeAuthStarting: 'Открытие входа в систему…',
+@@ -1298,7 +1298,7 @@ export const ru = {
+   updateFullscreenTimeout: 'Не удалось выйти из полноэкранного режима. Выйдите из полноэкранного режима и повторите попытку обновления.',
+   updateStopFailed: 'Не удалось безопасно остановить задачи. Обновление не установлено. Пожалуйста, повторите попытку позже.',
+   updateTechnicalDetails: 'Посмотреть технические подробности',
+-  updateTitle: 'DeepSeek Harness Обновление',
++  updateTitle: '!!APP_NAME!! Обновление',
+   updateAvailable: 'Доступна новая версия: {version}.',
+   updateDetail: 'После завершения загрузки вы можете установить обновление и перезапустить приложение.',
+   installAndRestart: 'Установить и перезапустить',
+@@ -1370,19 +1370,19 @@ export const pt = {
+   application: 'Aplicativo',
+   fileMenu: 'Arquivo',
+   closePage: 'Fechar página ou janela',
+-  aboutMenu: 'Sobre DeepSeek Harness',
+-  aboutProduct: 'DeepSeek Harness',
++  aboutMenu: 'Sobre !!APP_NAME!!',
++  aboutProduct: '!!APP_NAME!!',
+   aboutVersion: 'Versão V{version}',
+-  hideApplication: 'Ocultar DeepSeek Harness',
++  hideApplication: 'Ocultar !!APP_NAME!!',
+   hideOtherApplications: 'Ocultar outros',
+   showAllApplications: 'Mostrar tudo',
+   substitutionsMenu: 'Substituições',
+   speechMenu: 'Fala',
+-  quitApplication: 'Sair de DeepSeek Harness',
+-  openApplication: 'Abra DeepSeek Harness',
++  quitApplication: 'Sair de !!APP_NAME!!',
++  openApplication: 'Abra !!APP_NAME!!',
+   quit: 'Sair',
+   cancel: 'Cancelar',
+-  quitTitle: 'Sair de DeepSeek Harness?',
++  quitTitle: 'Sair de !!APP_NAME!!?',
+   quitActiveTasks: 'As tarefas em execução serão interrompidas.',
+   quitScheduledTasks: 'As tarefas agendadas não serão executadas enquanto o aplicativo estiver fechado.',
+   quitActiveAndScheduledTasks: 'As tarefas em execução serão interrompidas e as tarefas agendadas não serão executadas enquanto o aplicativo estiver fechado.',
+@@ -1397,7 +1397,7 @@ export const pt = {
+   copy: 'Copiar',
+   paste: 'Colar',
+   selectAll: 'Selecionar tudo',
+-  startupFailed: 'DeepSeek Harness não está disponível',
++  startupFailed: '!!APP_NAME!! não está disponível',
+   fatalSummary: 'O aplicativo não pôde ser iniciado ou parou inesperadamente.',
+   startupAddressInUse: 'Outra instância DSH (como dsh web ou aplicativo de desktop) está em execução. Eles não podem começar ao mesmo tempo. Saia da outra instância DSH em execução e reinicie.',
+   diagnosticTruncated: '… Detalhes do erro reduzidos.',
+@@ -1412,10 +1412,10 @@ export const pt = {
+   restartApplication: 'Reiniciar',
+   recoveryOperationFailed: 'A operação de recuperação falhou',
+   disableThirdPartyPlugins: 'Desative plug-ins de terceiros, faça backup do patch do perfil e reinicie',
+-  welcomeTitle: 'DeepSeek Harness',
+-  welcomeBrand: 'DeepSeek Harness',
++  welcomeTitle: '!!APP_NAME!!',
++  welcomeBrand: '!!APP_NAME!!',
+   welcomeTaglineBefore: 'Bem-vindo ao ',
+-  welcomeTaglineBrand: 'DeepSeek Harness',
++  welcomeTaglineBrand: '!!APP_NAME!!',
+   welcomeTaglineAfter: '',
+   welcomeDescription: 'Construir potencial. Explore a inteligência.',
+   welcomeAuthStarting: 'Abrindo login…',
+@@ -1489,7 +1489,7 @@ export const pt = {
+   updateFullscreenTimeout: 'Não foi possível sair da tela cheia. Saia da tela inteira e tente atualizar novamente.',
+   updateStopFailed: 'Não foi possível interromper as tarefas com segurança. A atualização não foi instalada. Por favor, tente novamente mais tarde.',
+   updateTechnicalDetails: 'Ver detalhes técnicos',
+-  updateTitle: 'DeepSeek Harness Atualização',
++  updateTitle: '!!APP_NAME!! Atualização',
+   updateAvailable: 'Nova versão disponível: {version}',
+   updateDetail: 'Assim que o download for concluído, você pode instalar a atualização e reiniciar o aplicativo.',
+   installAndRestart: 'Instalar e reiniciar',
+diff --git a/packages/client/locale/src/locales/de.ts b/packages/client/locale/src/locales/de.ts
+index cb0bb455..85183f80 100644
+--- a/packages/client/locale/src/locales/de.ts
++++ b/packages/client/locale/src/locales/de.ts
+@@ -36,7 +36,7 @@ export const de = {
+   'subtitle.expand': 'Beschreibung für {name} ausklappen',
+   'subtitle.collapse': 'Beschreibung für {name} einklappen',
+   'back': 'Zurück',
+-  'brand.localBuild': 'Lokaler DSH-Build',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'Standardarbeitsbereich',
+   'unknown': 'Unbekannt',
+   'none': 'Keine',
+diff --git a/packages/client/locale/src/locales/en.ts b/packages/client/locale/src/locales/en.ts
+index 47a03d69..fa634b72 100644
+--- a/packages/client/locale/src/locales/en.ts
++++ b/packages/client/locale/src/locales/en.ts
+@@ -35,7 +35,7 @@ export const en = {
+   'subtitle.expand': 'Expand description for {name}',
+   'subtitle.collapse': 'Collapse description for {name}',
+   'back': 'Back',
+-  'brand.localBuild': 'DSH Local Build',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'Default workspace',
+   'unknown': 'Unknown',
+   'none': 'None',
+diff --git a/packages/client/locale/src/locales/es.ts b/packages/client/locale/src/locales/es.ts
+index 4fba9848..575ed4da 100644
+--- a/packages/client/locale/src/locales/es.ts
++++ b/packages/client/locale/src/locales/es.ts
+@@ -36,7 +36,7 @@ export const es = {
+   'subtitle.expand': 'Expandir la descripción de {name}',
+   'subtitle.collapse': 'Contraer la descripción de {name}',
+   'back': 'Atrás',
+-  'brand.localBuild': 'Compilación local de DSH',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'Espacio de trabajo predeterminado',
+   'unknown': 'Desconocido',
+   'none': 'Ninguno',
+diff --git a/packages/client/locale/src/locales/fr.ts b/packages/client/locale/src/locales/fr.ts
+index f0e5030f..99b2684a 100644
+--- a/packages/client/locale/src/locales/fr.ts
++++ b/packages/client/locale/src/locales/fr.ts
+@@ -36,7 +36,7 @@ export const fr = {
+   'subtitle.expand': 'Développer la description de {name}',
+   'subtitle.collapse': 'Réduire la description de {name}',
+   'back': 'Retour',
+-  'brand.localBuild': 'Version locale de DSH',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'Espace de travail par défaut',
+   'unknown': 'Inconnu',
+   'none': 'Aucun',
+diff --git a/packages/client/locale/src/locales/ja.ts b/packages/client/locale/src/locales/ja.ts
+index 2b70cbb1..ab23bb39 100644
+--- a/packages/client/locale/src/locales/ja.ts
++++ b/packages/client/locale/src/locales/ja.ts
+@@ -36,7 +36,7 @@ export const ja = {
+   'subtitle.expand': '{name} の説明を展開',
+   'subtitle.collapse': '{name} の説明を折りたたむ',
+   'back': '戻る',
+-  'brand.localBuild': 'DSHローカルビルド',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'デフォルトワークスペース',
+   'unknown': '不明',
+   'none': 'なし',
+diff --git a/packages/client/locale/src/locales/pt.ts b/packages/client/locale/src/locales/pt.ts
+index adf71115..3f32646b 100644
+--- a/packages/client/locale/src/locales/pt.ts
++++ b/packages/client/locale/src/locales/pt.ts
+@@ -36,7 +36,7 @@ export const pt = {
+   'subtitle.expand': 'Expandir descrição de {name}',
+   'subtitle.collapse': 'Recolher descrição de {name}',
+   'back': 'Voltar',
+-  'brand.localBuild': 'Versão local do DSH',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'Espaço de trabalho padrão',
+   'unknown': 'Desconhecido',
+   'none': 'Nenhum',
+diff --git a/packages/client/locale/src/locales/ru.ts b/packages/client/locale/src/locales/ru.ts
+index e75620fe..d32e6ca1 100644
+--- a/packages/client/locale/src/locales/ru.ts
++++ b/packages/client/locale/src/locales/ru.ts
+@@ -36,7 +36,7 @@ export const ru = {
+   'subtitle.expand': 'Развернуть описание {name}',
+   'subtitle.collapse': 'Свернуть описание {name}',
+   'back': 'Назад',
+-  'brand.localBuild': 'Локальная сборка DSH',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': 'Рабочая область по умолчанию',
+   'unknown': 'Неизвестно',
+   'none': 'Нет',
+diff --git a/packages/client/locale/src/locales/zh.ts b/packages/client/locale/src/locales/zh.ts
+index 6350caae..67ba12aa 100644
+--- a/packages/client/locale/src/locales/zh.ts
++++ b/packages/client/locale/src/locales/zh.ts
+@@ -33,7 +33,7 @@ export const zh = {
+   'subtitle.expand': '展开{name}的描述',
+   'subtitle.collapse': '收起{name}的描述',
+   'back': '返回',
+-  'brand.localBuild': 'DSH 本地构建',
++  'brand.localBuild': '!!APP_NAME_SHORT!!',
+   'workspace.defaultName': '默认工作区',
+   'unknown': '未知',
+   'none': '无',
+diff --git a/scripts/client-build-environment.ts b/scripts/client-build-environment.ts
+index 6eed371b..7813e7c6 100644
+--- a/scripts/client-build-environment.ts
++++ b/scripts/client-build-environment.ts
+@@ -206,6 +206,7 @@ export function resolveClientBuildEnvironment(
+       DSH_CLIENT_VERSION: version,
+       ...(profile === 'official' ? OFFICIAL_CLIENT_BUILD_ENVIRONMENT : {
+         DSH_CLIENT_BUILD_PROFILE: 'local',
++        DSH_CLIENT_TITLE: '!!APP_NAME!!',
+         ...(environment.DSH_CLIENT_GIT_DIRTY === 'true' ? { DSH_CLIENT_GIT_DIRTY: 'true' } : {}),
+       }),
+     }

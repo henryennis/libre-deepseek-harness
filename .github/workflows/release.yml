@@ -1,0 +1,86 @@
+name: Release
+
+# Every change to what goes into the build (pin, patches, branding, domain rules, scripts) that lands on main
+# publishes a release. Installed desktop apps poll <latest release>/nightly.yml (or stable.yml) and offer it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - upstream.json
+      - brand.json
+      - patches/**
+      - brand/**
+      - domains/**
+      - scripts/**
+      - .github/workflows/release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 180
+    env:
+      DSH_TELEMETRY_DISABLED: '1'
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: npm install -g pnpm@11.28.5
+
+      - name: Apply the patch set
+        run: node scripts/prepare.mjs
+
+      - name: Build the CLI packages and scan them
+        run: node scripts/build.mjs
+
+      - name: Version
+        id: version
+        run: |
+          product=$(node -p "require('./harness/apps/desktop/package.json').version")
+          echo "value=${product}.$(date -u +%Y%m%d).${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Package the desktop installer
+        run: node scripts/package-desktop.mjs --build-version "${{ steps.version.outputs.value }}"
+        env:
+          PYTHON: python
+
+      - name: Assemble release files
+        run: |
+          mkdir -p release
+          cp dist/desktop/*.exe dist/desktop/*.blockmap dist/desktop/nightly.yml dist/desktop/stable.yml release/
+          (cd dist && powershell -NoProfile -Command "Compress-Archive -Path npm -DestinationPath ../release/libre-deepseek-harness-cli.zip")
+          (cd release && sha256sum * > SHA256SUMS.txt)
+          upstream=$(node -p "require('./upstream.json').commit")
+          {
+            echo "Built from upstream [deepseek-ai/deepseek-harness@${upstream:0:12}](https://github.com/deepseek-ai/deepseek-harness/commit/${upstream})."
+            echo
+            echo "**Desktop (Windows x64):** run the \`.exe\`. It is unsigned, so Windows SmartScreen asks for confirmation on first install; later updates arrive in the app."
+            echo
+            echo "**CLI:** \`node scripts/update-cli.mjs\` from a clone of this repository."
+            echo
+            echo "Patches applied:"
+            grep -v '^#' patches/series | grep -v '^\s*$' | sed 's/^/- /'
+          } > release-notes.md
+
+      - name: Publish
+        run: |
+          version="${{ steps.version.outputs.value }}"
+          gh release create "v${version}" release/* --title "Libre DeepSeek Harness ${version}" --notes-file release-notes.md --latest

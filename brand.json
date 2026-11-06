@@ -4,5 +4,6 @@
   "APP_ID": "io.github.henryennis.libre-deepseek-harness",
   "BINARY_NAME": "dsh",
   "GH_REPO": "henryennis/libre-deepseek-harness",
-  "RELEASES_URL": "https://github.com/henryennis/libre-deepseek-harness/releases"
+  "RELEASES_URL": "https://github.com/henryennis/libre-deepseek-harness/releases",
+  "PACKAGE_NAME": "libre-deepseek-harness"
 }

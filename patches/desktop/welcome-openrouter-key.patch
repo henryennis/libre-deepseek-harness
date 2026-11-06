@@ -1,0 +1,100 @@
+Desktop first run: the DeepSeek account service is not mounted in this build, so the welcome window treats its absence as signed out, stops watching its stream, opens straight on the API-key page without a sign-in option, and saves the key to OPENROUTER_API_KEY, the credential the default model route reads.
+
+diff --git a/apps/desktop/src/client/WelcomePage.tsx b/apps/desktop/src/client/WelcomePage.tsx
+index b3670617..f99e6b50 100644
+--- a/apps/desktop/src/client/WelcomePage.tsx
++++ b/apps/desktop/src/client/WelcomePage.tsx
+@@ -17,9 +17,9 @@ type Page = 'entry' | 'key' | 'account'
+ export function Welcome({ api }: { api: WelcomeApi }) {
+   const { messages: m } = api
+   const [expiryNotice, setExpiryNotice] = useState(false)
+-  const [page, setPage] = useState<Page>('entry')
+-  const pageRef = useRef<Page>('entry')
+-  const visiblePage = useRef<Page>('entry')
++  const [page, setPage] = useState<Page>('key')
++  const pageRef = useRef<Page>('key')
++  const visiblePage = useRef<Page>('key')
+   const [attempt, setAttempt] = useState<AccountView['attempt']>(null)
+   const attemptRef = useRef<AccountView['attempt']>(null)
+   const [starting, setStarting] = useState(false)
+@@ -215,7 +215,7 @@ export function Welcome({ api }: { api: WelcomeApi }) {
+       <div id="key-actions" className="actions" hidden={page !== 'key'}>
+         <button id="save-key" className="primary" type="submit" form="key-form" disabled={busy || draft.trim() === ''}>{m.welcomeKeySave}</button>
+         <button id="skip-key" className="secondary" type="button" disabled={busy} onClick={() => { void skip() }}>{m.welcomeKeyLater}</button>
+-        <button id="back-to-login" className="back" type="button" disabled={busy} onClick={() => {
++        <button id="back-to-login" className="back" type="button" hidden disabled={busy} onClick={() => {
+           if (busyRef.current) return
+           setDraft(''); setError(''); focusEntry.current = true; navigate('entry')
+         }}>{m.welcomeKeyBack}</button>
+diff --git a/apps/desktop/src/locale.ts b/apps/desktop/src/locale.ts
+index 050548e8..9e7072f4 100644
+--- a/apps/desktop/src/locale.ts
++++ b/apps/desktop/src/locale.ts
+@@ -93,9 +93,9 @@ export const en = {
+   welcomeAuthRetry: 'Sign in again',
+   welcomeSignIn: 'Sign in',
+   welcomeApiKey: 'Add API Key',
+-  welcomeKeyTitle: 'Add an API key to get started',
+-  welcomeKeyDescription: 'Configure official DeepSeek models to start using Harness',
+-  welcomeKeyPlaceholder: 'Enter API key',
++  welcomeKeyTitle: 'Add your OpenRouter API key',
++  welcomeKeyDescription: 'Create one at openrouter.ai/keys. You can change providers later in Settings > Models.',
++  welcomeKeyPlaceholder: 'Enter OpenRouter API key',
+   welcomeKeySave: 'Save and continue',
+   welcomeKeyLater: 'Set up later',
+   welcomeKeyBack: 'Back to sign in',
+@@ -286,8 +286,8 @@ export const zh = {
+   welcomeAuthRetry: '重新登录',
+   welcomeSignIn: '登录',
+   welcomeApiKey: '添加 API Key',
+-  welcomeKeyTitle: '添加一个 API Key 开始使用',
+-  welcomeKeyDescription: '配置 DeepSeek 官方模型，即可开始使用',
++  welcomeKeyTitle: '添加 OpenRouter API Key',
++  welcomeKeyDescription: '在 openrouter.ai/keys 创建密钥。之后可在 设置 > 模型 中更换服务商。',
+   welcomeKeyPlaceholder: '输入 API 密钥',
+   welcomeKeySave: '保存并继续',
+   welcomeKeyLater: '稍后配置',
+diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
+index 17f8043f..03b055fa 100644
+--- a/apps/desktop/src/main.ts
++++ b/apps/desktop/src/main.ts
+@@ -548,7 +548,9 @@ async function main(): Promise<void> {
+         if (!reportedLaunch) { reportedLaunch = true; void track('desktop_app_launch', {}) }
+         stopAccount?.()
+         const accountBackend = welcomeBackend.account
+-        stopAccount = accountBackend.watch((state) => {
++        // No DeepSeek account service in this build: watching its stream would only retry a dead endpoint.
++        const accountServiceMounted = false
++        stopAccount = !accountServiceMounted ? undefined : accountBackend.watch((state) => {
+           if (quitting) return
+           if (welcomeWindow !== undefined && !welcomeWindow.isDestroyed()) welcomeWindow.webContents.send(WELCOME_IPC.state, state)
+           const attempt = state.attempt
+diff --git a/apps/desktop/src/welcome-backend.ts b/apps/desktop/src/welcome-backend.ts
+index 15b0932c..1053bc56 100644
+--- a/apps/desktop/src/welcome-backend.ts
++++ b/apps/desktop/src/welcome-backend.ts
+@@ -70,12 +70,9 @@ export function connectDesktopWelcome(
+   const settingsAndReference = async () => {
+     const settings = await invoke({ namespace: 'settings', method: 'describe', args: {} })
+     if (!record(settings) || !Array.isArray(settings.namespaces)) throw new Error('desktop welcome: missing settings namespaces')
+-    const official: unknown = settings.namespaces.find((item: unknown) => record(item) && item.ns === 'llm-deepseek')
+-    if (official === undefined) return { settings: { namespaces: settings.namespaces }, ref: undefined }
+-    if (!record(official) || !record(official.value) || typeof official.value.apiKeyEnv !== 'string') {
+-      throw new Error('desktop welcome: missing official DeepSeek credential reference')
+-    }
+-    return { settings: { namespaces: settings.namespaces }, ref: official.value.apiKeyEnv }
++    // This build's default model route is OpenRouter; its key is the credential the first-run page asks for.
++    const ref: string | undefined = 'OPENROUTER_API_KEY'
++    return { settings: { namespaces: settings.namespaces }, ref }
+   }
+   const localePreference = (namespaces: unknown[]): string | null => {
+     const locale: unknown = namespaces.find((item: unknown) => record(item) && item.ns === 'locale')
+@@ -112,7 +109,7 @@ export function connectDesktopWelcome(
+     }
+     if (ref !== undefined && !record(states[ref])) throw new Error('desktop welcome: missing credential metadata')
+     return {
+-      loggedIn: (await account.state()).status === 'credential-stored',
++      loggedIn: await account.state().then(state => state.status === 'credential-stored', () => false),
+       hasApiKey: Object.values(states).some(value => record(value) && value.configured === true),
+       writable: ref !== undefined && record(states[ref]) && states[ref].writable === true,
+       localePreference: localePreference(namespaces),

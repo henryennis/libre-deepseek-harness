@@ -1,0 +1,24 @@
+Desktop: turn off product analytics. The collection policy is disabled and the OTLP exporter row is not mounted, so the desktop app reports no usage events anywhere.
+
+diff --git a/packages/bundle/web-app/cordis.patch.yml b/packages/bundle/web-app/cordis.patch.yml
+index 1d20d7ab..fbd4f0e4 100644
+--- a/packages/bundle/web-app/cordis.patch.yml
++++ b/packages/bundle/web-app/cordis.patch.yml
+@@ -36,7 +36,7 @@
+ - insert:
+     - id: desktop-product-telemetry
+       name: '@deepseek-ai/dsh-host-product-telemetry-otel'
+-      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
++      disabled: true
+       config:
+         scheduledDelayMillis: 30000
+         timeoutMillis: 15000
+@@ -50,7 +50,7 @@
+       name: '@deepseek-ai/dsh-client-product-analytics'
+       disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+       config:
+-        enabled: true
++        enabled: false
+         appVersion: !!js process.env.DSH_CLIENT_VERSION
+ 
+     # Host-owned authorization sampled at Agent creation. The Plugins page
